@@ -37,8 +37,17 @@ if [ -z "$SIM" ] || [ -z "$OUT" ] || [ -z "$SNAPSPEC" ]; then
     echo "Error: -i (input) -o (output) -s (snapshot) are required"; usage
 fi
 
-# Expand snapshot range "30-40"; keep a single "37" as-is
-if [[ "$SNAPSPEC" == *-* ]]; then
+# Snapshot selection:
+#   "all"   -> every PREFIX_XXXX.hdf5 found in SIM
+#   "30-40" -> inclusive range
+#   "37"    -> single snapshot
+if [ "$SNAPSPEC" = all ]; then
+    SNAPS=$(for f in "$SIM"/${PREFIX}_[0-9][0-9][0-9][0-9].hdf5; do
+                [ -e "$f" ] || continue
+                b=$(basename "$f" .hdf5); echo $((10#${b#${PREFIX}_}))
+            done | sort -n -u)
+    [ -z "$SNAPS" ] && { echo "No ${PREFIX}_XXXX.hdf5 found in $SIM"; exit 1; }
+elif [[ "$SNAPSPEC" == *-* ]]; then
     A=${SNAPSPEC%-*}; B=${SNAPSPEC#*-}
     SNAPS=$(seq "$((10#$A))" "$((10#$B))")
 else
