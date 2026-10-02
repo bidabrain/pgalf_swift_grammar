@@ -17,10 +17,10 @@
 #include "hfind.h"
 #include "galcenter.h"
 
-#define REQUIRED_OMEGA_M 0.3f
-#define REQUIRED_OMEGA_B 0.049f
-#define REQUIRED_H0 67.11f
-#define REQUIRED_OMEGA_L 0.7f
+#define REQUIRED_OMEGA_M 0.287845f
+#define REQUIRED_OMEGA_B 0.047143f
+#define REQUIRED_H0 69.33f
+#define REQUIRED_OMEGA_L 0.712155f
 
 FoFTPtlStruct *rbuffer;
 

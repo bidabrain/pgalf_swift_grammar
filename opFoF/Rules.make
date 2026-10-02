@@ -15,9 +15,9 @@ RANLIB = ranlib
 ####      KIAS PG Compiler                          #####
 #########################################################
 AR = ar rcv
-FC = mpiifx
-CC = mpiicx
-F90C = mpiifx
+FC = mpif90
+CC = mpicc
+F90C = mpif90
 #OPT = -DPGCC -mcmodel=medium -tp nehalem-64 -fast -mp -fastsse
 OPT = -DINTEL -g -fcommon
 
@@ -38,8 +38,8 @@ RAMLIBS = -L../ -lmyram
 
 LIBS = $(RAMLIBS) -lm
 
-FFLAGS = $(FDFLAGS) $(OPT) $(COMFLAGS)  
-CFLAGS = $(OPT) $(CDFLAGS)  $(COMFLAGS) 
+FFLAGS = $(FDFLAGS) $(OPT) $(COMFLAGS)  -std=legacy -fallow-argument-mismatch
+CFLAGS = $(OPT) $(CDFLAGS)  $(COMFLAGS)  -fpermissive
 LDFLAGS = $(OPT) $(RAMLIBS) 
 
 

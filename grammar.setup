@@ -1,0 +1,22 @@
+This is for gcc, default intel compiler
+
+./configure --cc=mpicc --fc=mpifort --fftw=/opt/ohpc/pub/libs/gnu12/openmpi4/fftw/3.3.10/
+
+sed -i 's/mpiicx/mpicc/g' NewGalFinder/Makefile
+sed -i 's/mpiifx/mpif90/g' NewGalFinder/Makefile
+
+replace qopenmp to fopenmp in all Makefile  :%s/qopenmp/fopenmp/g
+
+make all
+
+
+cd opFoF
+sed -i 's/mpiicx/mpicc/g' Rules.make
+
+sed -i 's/aa = (void\*) star = (StarType\*)/star = (StarType*)/g' ramses2read.c
+sed -i 's/aa = (void\*)sink = (SinkType\*)/sink = (SinkType*)/g' ramses2read.c
+sed -i 's/aa = (void\*)gas = (GasType\*)/gas = (GasType*)/g' ramses2read.c
+sed -i 's/aa = (void\*)dm = (DmType\*)/dm = (DmType*)/g' ramses2read.c
+make this
+
+

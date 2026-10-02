@@ -13,19 +13,19 @@ TOPDIR="$(cd "$(dirname "$0")" && pwd)"
 #--------------------------------------------------
 
 # Common compilers
-CC="mpiicx"
-FC="mpiifx"
+CC="mpicc"
+FC="mpif90"
 
 # GalFinder (NewGalFinder) can use different compilers (Intel OneAPI)
-GALFINDER_CC="mpiicx"
-GALFINDER_FC="mpiifx"
+GALFINDER_CC="mpicc"
+GALFINDER_FC="mpif90"
 
 # Paths
-FFTW_PATH="/home/kjhan/local"
+FFTW_PATH="/home/dbi224/local/omp5/fftw3"
 
 # Optimization
 OPT="-O3"
-OPENMP="-qopenmp"
+OPENMP="-fopenmp"
 
 # Common preprocessor defines
 NENER="0"

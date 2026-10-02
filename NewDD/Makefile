@@ -6,7 +6,7 @@
 #--------------------------------------------------
 # Compiler settings (configured by ../configure)
 #--------------------------------------------------
-CC = mpiicx
+CC = mpicc
 OPT = -g -DNENER=0 -DNPRE=8 -DNMEG=20000 -DWGROUPSIZE=5  -DUSE_MPI -DQUADHILBERT -DREAD_SINK -DNCHEM=9 -DNDUST=4 -DDEBUG=1 -DLOG=1 -DGADGET_HDF5
 
 RANLIB = ranlib
@@ -21,8 +21,8 @@ TIMEROBJ       = rd_amr.o  rd_info.o  rd_part.o header.o utils.o Memory2.o find_
 NEWDD	= newdd.exe
 NEWDDOBJ	= newdd.o
 
-HDF5_INC = /home/bkoh/miniconda3/envs/pgalf/include
-HDF5_LIB = /home/kjhan/local/lib
+HDF5_INC = /opt/ohpc/pub/libs/gnu14/hdf5/1.14.6/include
+HDF5_LIB = /opt/ohpc/pub/libs/gnu14/hdf5/1.14.6/lib
 
 INCLUDES = -I./ -I../ -I$(HDF5_INC)
 

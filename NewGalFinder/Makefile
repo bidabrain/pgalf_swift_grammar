@@ -17,19 +17,19 @@ RANLIB = ranlib
 #--------------------------------------------------
 # Compiler settings (configured by ../configure)
 #--------------------------------------------------
-FFTW = /home/kjhan/local
+FFTW = /home/dbi224/local/omp5/fftw3
 
-FC = mpiifx
-CC = mpiicx
+FC = mpif90
+CC = mpicc
 
 INCLUDES = -I$(FFTW)/include
 
 DFLAGS = -DNMEG=90000L
 
-OPT = -g  -qopenmp -DINDEX -DVarPM   -DXYZDBL -DNENER=0 -DNPRE=8 -DREAD_SINK -DNCHEM=9 -DNDUST=4 -DADV
+OPT = -O2 -fcommon  -fopenmp -DINDEX -DVarPM   -DXYZDBL -DNENER=0 -DNPRE=8 -DREAD_SINK -DNCHEM=3 -DADV
 
-FFLAGS = $(FDFLAGS) $(OPT)  -mcmodel=medium
-CFLAGS = $(DFLAGS)  $(OPT) $(INCLUDES)  -DDEBUG=1 -DLOG=1
+FFLAGS = $(FDFLAGS) $(OPT)  -mcmodel=medium -fpermissive
+CFLAGS = $(DFLAGS)  $(OPT) $(INCLUDES)  -DDEBUG=1 -DLOG=1 -std=legacy -fallow-argument-mismatch
 
 LIBS = -L$(FFTW)/lib -lfftw3f_omp -lfftw3f -lm
 

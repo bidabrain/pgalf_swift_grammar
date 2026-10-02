@@ -24,9 +24,9 @@
 #define MAXNFILE 100000
 #define NLEN 190
 
-#define REQUIRED_OMEGA_M 0.3f
-#define REQUIRED_OMEGA_B 0.049f
-#define REQUIRED_H0 67.11f
+#define REQUIRED_OMEGA_M 0.287845f
+#define REQUIRED_OMEGA_B 0.047143f
+#define REQUIRED_H0 69.33f
 
 static void apply_required_cosmology(RamsesType *sp){
 	sp->omega_m = REQUIRED_OMEGA_M;

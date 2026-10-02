@@ -14,15 +14,15 @@ RANLIB = ranlib
 #--------------------------------------------------
 # Compiler settings (configured by ../configure)
 #--------------------------------------------------
-FC = mpiifx
-CC = mpiicx
+FC = mpif90
+CC = mpicc
 
-OPT = -g  -qopenmp -DINDEX -DVarPM   -DXYZDBL  -DQUADHILBERT -DNENER=0 -DNPRE=8 -DREAD_SINK -DNCHEM=9 -DNDUST=4
+OPT = -O2 -fcommon  -fopenmp -DINDEX -DVarPM   -DXYZDBL  -DQUADHILBERT -DNENER=0 -DNPRE=8 -DREAD_SINK -DNCHEM=9 -DNDUST=4
 
 DFLAGS = -DNMEG=5000L -D_LARGE_FILES
 
-FFLAGS = $(FDFLAGS) $(OPT)  -mcmodel=medium
-CFLAGS = $(DFLAGS)  $(OPT)
+FFLAGS = $(FDFLAGS) $(OPT)  -mcmodel=medium  -std=legacy -fallow-argument-mismatch
+CFLAGS = $(DFLAGS)  $(OPT)  -fpermissive
 LDFLAGS = $(OPT) -mcmodel=medium
 
 LIBS = -lm
