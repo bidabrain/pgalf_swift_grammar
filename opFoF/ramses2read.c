@@ -63,19 +63,19 @@ size_t read_ramses_data(FoFTPtlStruct **Bp, size_t np, char *file1, char *type, 
 
 	if(strcmp(type,"STAR")==0){
 		dsize = sizeof(StarType);
-		aa = (void*) star = (StarType*)malloc(sizeof(char)*size);
+		aa = star = (StarType*)malloc(sizeof(char)*size);
 	}
 	else if(strcmp(type,"SINK")==0){
 		dsize = sizeof(SinkType);
-		aa = (void*)sink = (SinkType*)malloc(sizeof(char)*size);
+		aa = sink = (SinkType*)malloc(sizeof(char)*size);
 	}
 	else if(strcmp(type,"GAS")==0){
 		dsize = sizeof(GasType);
-		aa = (void*)gas = (GasType*)malloc(sizeof(char)*size);
+		aa = gas = (GasType*)malloc(sizeof(char)*size);
 	}
 	else if(strcmp(type,"DM")==0){
 		dsize = sizeof(DmType);
-		aa = (void*)dm = (DmType*)malloc(sizeof(char)*size);
+		aa = dm = (DmType*)malloc(sizeof(char)*size);
 	}
 	else {
 		fprintf(stderr,"Oooooooooops. Wrong size in file and type\n");
