@@ -1,0 +1,993 @@
+Lmod Warning:
+-------------------------------------------------------------------------------
+The following dependent module(s) are not currently loaded: ucx (required by:
+openmpi5/5.0.7)
+-------------------------------------------------------------------------------
+
+
+
+
+Currently Loaded Modules:
+  1) gnu14/14.2.0     4) libfabric/1.18.0   7) hdf5/1.14.6
+  2) openmpi5/5.0.7   5) cmake/3.31.10      8) ucx/1.18.0-mt
+  3) hwloc/2.12.0     6) gsl/2.8
+
+ 
+
+=== PGalF: in=/gpfs/dbi224/swift_eagle_flamingo/flamingo_spin_jet out=/gpfs/dbi224/swift_eagle_flamingo/pgalf/flamingo_spin_jet snaps=0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90 91 92 93 94 95 96 97 98 99 100 101 102 103 104 105 106 107 108 109 110 111 112 113 114 115 116 117 118 119 120 121 122 123 124 125 126 127 128 129 130 131 132 133 134 135 136 137 138 139 140 141 142 143 144 145 146 147 148 149 150 151 152 153 154 155 156 157 158 159 160 161 162 163 164 165 166 167 168 169 170 171 172 173 174 175 176 177 178  nsplit=32 np=32 stages=all zmax=15 ===
+
+########## snapshot 0 (0000) ##########
+   skip: z=45 > zmax=15
+
+########## snapshot 1 (0001) ##########
+   skip: z=29.0616 > zmax=15
+
+########## snapshot 2 (0002) ##########
+   skip: z=22.242 > zmax=15
+
+########## snapshot 3 (0003) ##########
+   skip: z=18.3152 > zmax=15
+
+########## snapshot 4 (0004) ##########
+   skip: z=15.714 > zmax=15
+
+########## snapshot 5 (0005) ##########
+   z=13.8424 (<= 15)
+>>> [1/4] NewDD
+Initializing 20000 Mbytes memory space
+HDF5-DIAG: Error detected in HDF5 (1.14.6):
+  #000: H5F.c line 827 in H5Fopen(): unable to synchronously open file
+    major: File accessibility
+    minor: Unable to open file
+  #001: H5F.c line 788 in H5F__open_api_common(): unable to open file
+    major: File accessibility
+    minor: Unable to open file
+  #002: H5VLcallback.c line 3680 in H5VL_file_open(): open failed
+    major: Virtual Object Layer
+    minor: Can't open object
+  #003: H5VLcallback.c line 3514 in H5VL__file_open(): open failed
+    major: Virtual Object Layer
+    minor: Can't open object
+  #004: H5VLnative_file.c line 128 in H5VL__native_file_open(): unable to open file
+    major: File accessibility
+    minor: Unable to open file
+  #005: H5Fint.c line 1897 in H5F_open(): can't try opening file
+    major: File accessibility
+    minor: Unable to open file
+  #006: H5FD.c line 787 in H5FD_open(): can't open file
+    major: Virtual File Layer
+    minor: Unable to open file
+  #007: H5FDsec2.c line 323 in H5FD__sec2_open(): unable to open file: name = './snapdir_005/snapshot_005.hdf5', errno = 2, error message = 'No such file or directory', flags = 0, o_flags = 0
+    major: File accessibility
+    minor: Unable to open file
+HDF5-DIAG: Error detected in HDF5 (1.14.6):
+  #000: H5F.c line 827 in H5Fopen(): unable to synchronously open file
+    major: File accessibility
+    minor: Unable to open file
+  #001: H5F.c line 788 in H5F__open_api_common(): unable to open file
+    major: File accessibility
+    minor: Unable to open file
+  #002: H5VLcallback.c line 3680 in H5VL_file_open(): open failed
+    major: Virtual Object Layer
+    minor: Can't open object
+  #003: H5VLcallback.c line 3514 in H5VL__file_open(): open failed
+    major: Virtual Object Layer
+    minor: Can't open object
+  #004: H5VLnative_file.c line 128 in H5VL__native_file_open(): unable to open file
+    major: File accessibility
+    minor: Unable to open file
+  #005: H5Fint.c line 1897 in H5F_open(): can't try opening file
+    major: File accessibility
+    minor: Unable to open file
+  #006: H5FD.c line 787 in H5FD_open(): can't open file
+    major: Virtual File Layer
+    minor: Unable to open file
+  #007: H5FDsec2.c line 323 in H5FD__sec2_open(): unable to open file: name = './snapdir_005/snapshot_005.0.hdf5', errno = 2, error message = 'No such file or directory', flags = 0, o_flags = 0
+    major: File accessibility
+    minor: Unable to open file
+[file rd_gadget.c, line 268]: Cannot open GADGET snapshot from base './snapdir_005/snapshot_005'
+HDF5-DIAG: Error detected in HDF5 (1.14.6):
+  #000: H5F.c line 827 in H5Fopen(): unable to synchronously open file
+    major: File accessibility
+    minor: Unable to open file
+  #001: H5F.c line 788 in H5F__open_api_common(): unable to open file
+    major: File accessibility
+    minor: Unable to open file
+  #002: H5VLcallback.c line 3680 in H5VL_file_open(): open failed
+    major: Virtual Object Layer
+    minor: Can't open object
+  #003: H5VLcallback.c line 3514 in H5VL__file_open(): open failed
+    major: Virtual Object Layer
+    minor: Can't open object
+  #004: H5VLnative_file.c line 128 in H5VL__native_file_open(): unable to open file
+    major: File accessibility
+    minor: Unable to open file
+  #005: H5Fint.c line 1897 in H5F_open(): can't try opening file
+    major: File accessibility
+    minor: Unable to open file
+  #006: H5FD.c line 787 in H5FD_open(): can't open file
+    major: Virtual File Layer
+    minor: Unable to open file
+  #007: H5FDsec2.c line 323 in H5FD__sec2_open(): unable to open file: name = './snapshot_005.hdf5', errno = 2, error message = 'No such file or directory', flags = 0, o_flags = 0
+    major: File accessibility
+    minor: Unable to open file
+HDF5-DIAG: Error detected in HDF5 (1.14.6):
+  #000: H5F.c line 827 in H5Fopen(): unable to synchronously open file
+    major: File accessibility
+    minor: Unable to open file
+  #001: H5F.c line 788 in H5F__open_api_common(): unable to open file
+    major: File accessibility
+    minor: Unable to open file
+  #002: H5VLcallback.c line 3680 in H5VL_file_open(): open failed
+    major: Virtual Object Layer
+    minor: Can't open object
+  #003: H5VLcallback.c line 3514 in H5VL__file_open(): open failed
+    major: Virtual Object Layer
+    minor: Can't open object
+  #004: H5VLnative_file.c line 128 in H5VL__native_file_open(): unable to open file
+    major: File accessibility
+    minor: Unable to open file
+  #005: H5Fint.c line 1897 in H5F_open(): can't try opening file
+    major: File accessibility
+    minor: Unable to open file
+  #006: H5FD.c line 787 in H5FD_open(): can't open file
+    major: Virtual File Layer
+    minor: Unable to open file
+  #007: H5FDsec2.c line 323 in H5FD__sec2_open(): unable to open file: name = './snapshot_005.0.hdf5', errno = 2, error message = 'No such file or directory', flags = 0, o_flags = 0
+    major: File accessibility
+    minor: Unable to open file
+[file rd_gadget.c, line 268]: Cannot open GADGET snapshot from base './snapshot_005'
+GADGET mode: reading base './snap_0005' with 1 file(s)
+P0: Reading snapshot file index 0
+P0: particles done npart=16778329
+P0: gas done ngas=16776103
+P0: bh done nsink=0
+P0: qsort GAS 16776103
+P0: SplitDump GAS
+P0: GAS done
+P0: Malloc dm npart=16778329
+P0: SplitDump DM 16777216
+P0: DM done
+P0: SplitDump STAR 1113
+P0: STAR done
+P0: Free dm
+P0: Free sink/gas/particle
+Current memory stack 0
+>>> [2/4] opFoF
+reading ./FoF_Data/NewDD.00005/SN.00005.00000.info
+reading ./FoF_Data/NewDD.00005/SN.00005.00000.info
+reading ./FoF_Data/NewDD.00005/SN.00005.00000.info
+Warning: different size of RamsesType.
+Warning: We cannot read the full precision parameter values from the binary format.
+So, we degrade the precision from double to float in each parameters.
+Warning: different size of RamsesType.
+Warning: We cannot read the full precision parameter values from the binary format.
+So, we degrade the precision from double to float in each parameters.
+Warning: different size of RamsesType.
+Warning: We cannot read the full precision parameter values from the binary format.
+So, we degrade the precision from double to float in each parameters.
+reading ./FoF_Data/NewDD.00005/SN.00005.00000.info
+reading ./FoF_Data/NewDD.00005/SN.00005.00000.info
+Warning: different size of RamsesType.
+Warning: We cannot read the full precision parameter values from the binary format.
+So, we degrade the precision from double to float in each parameters.
+Warning: different size of RamsesType.
+Warning: We cannot read the full precision parameter values from the binary format.
+So, we degrade the precision from double to float in each parameters.
+P0 has a periodic box of Lx=18 Ly=18 Lz=18
+P0 has pid 1494200 in hostname grammar088
+P0 size = 18 hubble = 69.33
+P0  omep = 0.287845 omeplam = 0.712155 smooth=0
+P0  anow = 0.067375 
+P0 nx = 0 ny= 0 nz= 0 
+P0 rscale = 1 vscale= 1
+P0 has file ranges 0 32
+P0 has read ./FoF_Data/NewDD.00005/SN.00005.DM.00000.dat with np= 540059
+P0 has a periodic box of Lx=18 Ly=18 Lz=18
+P0 has pid 1494207 in hostname grammar088
+P0 size = 18 hubble = 69.33
+P0  omep = 0.287845 omeplam = 0.712155 smooth=0
+P0  anow = 0.067375 
+P0 nx = 0 ny= 0 nz= 0 
+P0 rscale = 1 vscale= 1
+P0 has file ranges 0 32
+P0 has read ./FoF_Data/NewDD.00005/SN.00005.DM.00000.dat with np= 540059
+P0 has a periodic box of Lx=18 Ly=18 Lz=18
+P0 has pid 1494210 in hostname grammar088
+P0 size = 18 hubble = 69.33
+P0  omep = 0.287845 omeplam = 0.712155 smooth=0
+P0  anow = 0.067375 
+P0 nx = 0 ny= 0 nz= 0 
+P0 rscale = 1 vscale= 1
+P0 has file ranges 0 32
+P0 has read ./FoF_Data/NewDD.00005/SN.00005.DM.00000.dat with np= 540059
+P0 has a periodic box of Lx=18 Ly=18 Lz=18
+P0 has pid 1494222 in hostname grammar088
+P0 size = 18 hubble = 69.33
+P0  omep = 0.287845 omeplam = 0.712155 smooth=0
+P0  anow = 0.067375 
+P0 nx = 0 ny= 0 nz= 0 
+P0 rscale = 1 vscale= 1
+P0 has file ranges 0 32
+P0 has read ./FoF_Data/NewDD.00005/SN.00005.DM.00000.dat with np= 540059
+P0 has a periodic box of Lx=18 Ly=18 Lz=18
+P0 has pid 1494224 in hostname grammar088
+P0 size = 18 hubble = 69.33
+P0  omep = 0.287845 omeplam = 0.712155 smooth=0
+P0  anow = 0.067375 
+P0 nx = 0 ny= 0 nz= 0 
+P0 rscale = 1 vscale= 1
+P0 has file ranges 0 32
+P0 has read ./FoF_Data/NewDD.00005/SN.00005.DM.00000.dat with np= 540059
+reading ./FoF_Data/NewDD.00005/SN.00005.00000.info
+Warning: different size of RamsesType.
+Warning: We cannot read the full precision parameter values from the binary format.
+So, we degrade the precision from double to float in each parameters.
+P0 has a periodic box of Lx=18 Ly=18 Lz=18
+P0 has pid 1494212 in hostname grammar088
+P0 size = 18 hubble = 69.33
+P0  omep = 0.287845 omeplam = 0.712155 smooth=0
+P0  anow = 0.067375 
+P0 nx = 0 ny= 0 nz= 0 
+P0 rscale = 1 vscale= 1
+P0 has file ranges 0 32
+P0 has read ./FoF_Data/NewDD.00005/SN.00005.DM.00000.dat with np= 540059
+P has example link02= 0.215541 Mpc/h for a mass of 1e+11
+[grammar088:1494207:0:1494207] Caught signal 11 (Segmentation fault: address not mapped to object at address 0x20)
+P has example link02= 0.215541 Mpc/h for a mass of 1e+11
+[grammar088:1494200:0:1494200] Caught signal 11 (Segmentation fault: address not mapped to object at address 0x20)
+P has example link02= 0.215541 Mpc/h for a mass of 1e+11
+[grammar088:1494210:0:1494210] Caught signal 11 (Segmentation fault: address not mapped to object at address 0x20)
+P has example link02= 0.215541 Mpc/h for a mass of 1e+11
+[grammar088:1494222:0:1494222] Caught signal 11 (Segmentation fault: address not mapped to object at address 0x20)
+P has example link02= 0.215541 Mpc/h for a mass of 1e+11
+[grammar088:1494224:0:1494224] Caught signal 11 (Segmentation fault: address not mapped to object at address 0x20)
+P has example link02= 0.215541 Mpc/h for a mass of 1e+11
+[grammar088:1494212:0:1494212] Caught signal 11 (Segmentation fault: address not mapped to object at address 0x20)
+reading ./FoF_Data/NewDD.00005/SN.00005.00000.info
+Warning: different size of RamsesType.
+Warning: We cannot read the full precision parameter values from the binary format.
+So, we degrade the precision from double to float in each parameters.
+P0 has a periodic box of Lx=18 Ly=18 Lz=18
+P0 has pid 1494198 in hostname grammar088
+P0 size = 18 hubble = 69.33
+P0  omep = 0.287845 omeplam = 0.712155 smooth=0
+P0  anow = 0.067375 
+P0 nx = 0 ny= 0 nz= 0 
+P0 rscale = 1 vscale= 1
+P0 has file ranges 0 32
+P0 has read ./FoF_Data/NewDD.00005/SN.00005.DM.00000.dat with np= 540059
+==== backtrace (tid:1494207) ====
+ 0 0x000000000003ebf0 __GI___sigaction()  :0
+ 1 0x0000000000159ef7 __memcpy_avx_unaligned_erms()  :0
+ 2 0x00000000000821e3 _IO_file_xsgetn()  :0
+ 3 0x0000000000077039 __GI__IO_fread()  :0
+ 4 0x000000000040f75c read_ramses_data()  /home/dbi224/opt/pgalf_swift/opFoF/ramses2read.c:109
+ 5 0x0000000000406701 main()  /home/dbi224/opt/pgalf_swift/opFoF/opfof.c:571
+ 6 0x00000000000295d0 __libc_start_call_main()  ???:0
+ 7 0x0000000000029680 __libc_start_main_alias_2()  :0
+ 8 0x0000000000402345 _start()  ???:0
+=================================
+==== backtrace (tid:1494212) ====
+ 0 0x000000000003ebf0 __GI___sigaction()  :0
+ 1 0x0000000000159ef7 __memcpy_avx_unaligned_erms()  :0
+ 2 0x00000000000821e3 _IO_file_xsgetn()  :0
+ 3 0x0000000000077039 __GI__IO_fread()  :0
+ 4 0x000000000040f75c read_ramses_data()  /home/dbi224/opt/pgalf_swift/opFoF/ramses2read.c:109
+ 5 0x0000000000406701 main()  /home/dbi224/opt/pgalf_swift/opFoF/opfof.c:571
+ 6 0x00000000000295d0 __libc_start_call_main()  ???:0
+ 7 0x0000000000029680 __libc_start_main_alias_2()  :0
+ 8 0x0000000000402345 _start()  ???:0
+=================================
+==== backtrace (tid:1494200) ====
+ 0 0x000000000003ebf0 __GI___sigaction()  :0
+ 1 0x0000000000159ef7 __memcpy_avx_unaligned_erms()  :0
+ 2 0x00000000000821e3 _IO_file_xsgetn()  :0
+ 3 0x0000000000077039 __GI__IO_fread()  :0
+ 4 0x000000000040f75c read_ramses_data()  /home/dbi224/opt/pgalf_swift/opFoF/ramses2read.c:109
+ 5 0x0000000000406701 main()  /home/dbi224/opt/pgalf_swift/opFoF/opfof.c:571
+ 6 0x00000000000295d0 __libc_start_call_main()  ???:0
+ 7 0x0000000000029680 __libc_start_main_alias_2()  :0
+ 8 0x0000000000402345 _start()  ???:0
+=================================
+==== backtrace (tid:1494210) ====
+ 0 0x000000000003ebf0 __GI___sigaction()  :0
+ 1 0x0000000000159ef7 __memcpy_avx_unaligned_erms()  :0
+ 2 0x00000000000821e3 _IO_file_xsgetn()  :0
+ 3 0x0000000000077039 __GI__IO_fread()  :0
+ 4 0x000000000040f75c read_ramses_data()  /home/dbi224/opt/pgalf_swift/opFoF/ramses2read.c:109
+ 5 0x0000000000406701 main()  /home/dbi224/opt/pgalf_swift/opFoF/opfof.c:571
+ 6 0x00000000000295d0 __libc_start_call_main()  ???:0
+ 7 0x0000000000029680 __libc_start_main_alias_2()  :0
+ 8 0x0000000000402345 _start()  ???:0
+=================================
+==== backtrace (tid:1494222) ====
+ 0 0x000000000003ebf0 __GI___sigaction()  :0
+ 1 0x0000000000159ef7 __memcpy_avx_unaligned_erms()  :0
+ 2 0x00000000000821e3 _IO_file_xsgetn()  :0
+ 3 0x0000000000077039 __GI__IO_fread()  :0
+ 4 0x000000000040f75c read_ramses_data()  /home/dbi224/opt/pgalf_swift/opFoF/ramses2read.c:109
+ 5 0x0000000000406701 main()  /home/dbi224/opt/pgalf_swift/opFoF/opfof.c:571
+ 6 0x00000000000295d0 __libc_start_call_main()  ???:0
+ 7 0x0000000000029680 __libc_start_main_alias_2()  :0
+ 8 0x0000000000402345 _start()  ???:0
+=================================
+==== backtrace (tid:1494224) ====
+ 0 0x000000000003ebf0 __GI___sigaction()  :0
+ 1 0x0000000000159ef7 __memcpy_avx_unaligned_erms()  :0
+ 2 0x00000000000821e3 _IO_file_xsgetn()  :0
+ 3 0x0000000000077039 __GI__IO_fread()  :0
+ 4 0x000000000040f75c read_ramses_data()  /home/dbi224/opt/pgalf_swift/opFoF/ramses2read.c:109
+ 5 0x0000000000406701 main()  /home/dbi224/opt/pgalf_swift/opFoF/opfof.c:571
+ 6 0x00000000000295d0 __libc_start_call_main()  ???:0
+ 7 0x0000000000029680 __libc_start_main_alias_2()  :0
+ 8 0x0000000000402345 _start()  ???:0
+=================================
+reading ./FoF_Data/NewDD.00005/SN.00005.00000.info
+Warning: different size of RamsesType.
+Warning: We cannot read the full precision parameter values from the binary format.
+So, we degrade the precision from double to float in each parameters.
+P0 has a periodic box of Lx=18 Ly=18 Lz=18
+P0 has pid 1494208 in hostname grammar088
+P0 size = 18 hubble = 69.33
+P0  omep = 0.287845 omeplam = 0.712155 smooth=0
+P0  anow = 0.067375 
+P0 nx = 0 ny= 0 nz= 0 
+P0 rscale = 1 vscale= 1
+P0 has file ranges 0 32
+P0 has read ./FoF_Data/NewDD.00005/SN.00005.DM.00000.dat with np= 540059
+reading ./FoF_Data/NewDD.00005/SN.00005.00000.info
+Warning: different size of RamsesType.
+Warning: We cannot read the full precision parameter values from the binary format.
+So, we degrade the precision from double to float in each parameters.
+P0 has a periodic box of Lx=18 Ly=18 Lz=18
+P0 has pid 1494204 in hostname grammar088
+P0 size = 18 hubble = 69.33
+P0  omep = 0.287845 omeplam = 0.712155 smooth=0
+P0  anow = 0.067375 
+P0 nx = 0 ny= 0 nz= 0 
+P0 rscale = 1 vscale= 1
+P0 has file ranges 0 32
+P0 has read ./FoF_Data/NewDD.00005/SN.00005.DM.00000.dat with np= 540059
+reading ./FoF_Data/NewDD.00005/SN.00005.00000.info
+Warning: different size of RamsesType.
+Warning: We cannot read the full precision parameter values from the binary format.
+So, we degrade the precision from double to float in each parameters.
+P0 has a periodic box of Lx=18 Ly=18 Lz=18
+P0 has pid 1494196 in hostname grammar088
+P0 size = 18 hubble = 69.33
+P0  omep = 0.287845 omeplam = 0.712155 smooth=0
+P0  anow = 0.067375 
+P0 nx = 0 ny= 0 nz= 0 
+P0 rscale = 1 vscale= 1
+P0 has file ranges 0 32
+P0 has read ./FoF_Data/NewDD.00005/SN.00005.DM.00000.dat with np= 540059
+P has example link02= 0.215541 Mpc/h for a mass of 1e+11
+[grammar088:1494198:0:1494198] Caught signal 11 (Segmentation fault: address not mapped to object at address 0x20)
+reading ./FoF_Data/NewDD.00005/SN.00005.00000.info
+Warning: different size of RamsesType.
+Warning: We cannot read the full precision parameter values from the binary format.
+So, we degrade the precision from double to float in each parameters.
+P0 has a periodic box of Lx=18 Ly=18 Lz=18
+P0 has pid 1494202 in hostname grammar088
+P0 size = 18 hubble = 69.33
+P0  omep = 0.287845 omeplam = 0.712155 smooth=0
+P0  anow = 0.067375 
+P0 nx = 0 ny= 0 nz= 0 
+P0 rscale = 1 vscale= 1
+P0 has file ranges 0 32
+P0 has read ./FoF_Data/NewDD.00005/SN.00005.DM.00000.dat with np= 540059
+==== backtrace (tid:1494198) ====
+ 0 0x000000000003ebf0 __GI___sigaction()  :0
+ 1 0x0000000000159ef7 __memcpy_avx_unaligned_erms()  :0
+ 2 0x00000000000821e3 _IO_file_xsgetn()  :0
+ 3 0x0000000000077039 __GI__IO_fread()  :0
+ 4 0x000000000040f75c read_ramses_data()  /home/dbi224/opt/pgalf_swift/opFoF/ramses2read.c:109
+ 5 0x0000000000406701 main()  /home/dbi224/opt/pgalf_swift/opFoF/opfof.c:571
+ 6 0x00000000000295d0 __libc_start_call_main()  ???:0
+ 7 0x0000000000029680 __libc_start_main_alias_2()  :0
+ 8 0x0000000000402345 _start()  ???:0
+=================================
+P has example link02= 0.215541 Mpc/h for a mass of 1e+11
+[grammar088:1494208:0:1494208] Caught signal 11 (Segmentation fault: address not mapped to object at address 0x20)
+reading ./FoF_Data/NewDD.00005/SN.00005.00000.info
+Warning: different size of RamsesType.
+Warning: We cannot read the full precision parameter values from the binary format.
+So, we degrade the precision from double to float in each parameters.
+P0 has a periodic box of Lx=18 Ly=18 Lz=18
+P0 has pid 1494194 in hostname grammar088
+P0 size = 18 hubble = 69.33
+P0  omep = 0.287845 omeplam = 0.712155 smooth=0
+P0  anow = 0.067375 
+P0 nx = 0 ny= 0 nz= 0 
+P0 rscale = 1 vscale= 1
+P0 has file ranges 0 32
+P0 has read ./FoF_Data/NewDD.00005/SN.00005.DM.00000.dat with np= 540059
+P has example link02= 0.215541 Mpc/h for a mass of 1e+11
+[grammar088:1494204:0:1494204] Caught signal 11 (Segmentation fault: address not mapped to object at address 0x20)
+reading ./FoF_Data/NewDD.00005/SN.00005.00000.info
+Warning: different size of RamsesType.
+Warning: We cannot read the full precision parameter values from the binary format.
+So, we degrade the precision from double to float in each parameters.
+P0 has a periodic box of Lx=18 Ly=18 Lz=18
+P0 has pid 1494218 in hostname grammar088
+P0 size = 18 hubble = 69.33
+P0  omep = 0.287845 omeplam = 0.712155 smooth=0
+P0  anow = 0.067375 
+P0 nx = 0 ny= 0 nz= 0 
+P0 rscale = 1 vscale= 1
+P0 has file ranges 0 32
+P0 has read ./FoF_Data/NewDD.00005/SN.00005.DM.00000.dat with np= 540059
+reading ./FoF_Data/NewDD.00005/SN.00005.00000.info
+Warning: different size of RamsesType.
+Warning: We cannot read the full precision parameter values from the binary format.
+So, we degrade the precision from double to float in each parameters.
+P0 has a periodic box of Lx=18 Ly=18 Lz=18
+P0 has pid 1494206 in hostname grammar088
+P0 size = 18 hubble = 69.33
+P0  omep = 0.287845 omeplam = 0.712155 smooth=0
+P0  anow = 0.067375 
+P0 nx = 0 ny= 0 nz= 0 
+P0 rscale = 1 vscale= 1
+P0 has file ranges 0 32
+P0 has read ./FoF_Data/NewDD.00005/SN.00005.DM.00000.dat with np= 540059
+==== backtrace (tid:1494208) ====
+ 0 0x000000000003ebf0 __GI___sigaction()  :0
+ 1 0x0000000000159ef7 __memcpy_avx_unaligned_erms()  :0
+ 2 0x00000000000821e3 _IO_file_xsgetn()  :0
+ 3 0x0000000000077039 __GI__IO_fread()  :0
+ 4 0x000000000040f75c read_ramses_data()  /home/dbi224/opt/pgalf_swift/opFoF/ramses2read.c:109
+ 5 0x0000000000406701 main()  /home/dbi224/opt/pgalf_swift/opFoF/opfof.c:571
+ 6 0x00000000000295d0 __libc_start_call_main()  ???:0
+ 7 0x0000000000029680 __libc_start_main_alias_2()  :0
+ 8 0x0000000000402345 _start()  ???:0
+=================================
+reading ./FoF_Data/NewDD.00005/SN.00005.00000.info
+Warning: different size of RamsesType.
+Warning: We cannot read the full precision parameter values from the binary format.
+So, we degrade the precision from double to float in each parameters.
+P0 has a periodic box of Lx=18 Ly=18 Lz=18
+P0 has pid 1494220 in hostname grammar088
+P0 size = 18 hubble = 69.33
+P0  omep = 0.287845 omeplam = 0.712155 smooth=0
+P0  anow = 0.067375 
+P0 nx = 0 ny= 0 nz= 0 
+P0 rscale = 1 vscale= 1
+P0 has file ranges 0 32
+P0 has read ./FoF_Data/NewDD.00005/SN.00005.DM.00000.dat with np= 540059
+P has example link02= 0.215541 Mpc/h for a mass of 1e+11
+[grammar088:1494196:0:1494196] Caught signal 11 (Segmentation fault: address not mapped to object at address 0x20)
+==== backtrace (tid:1494204) ====
+ 0 0x000000000003ebf0 __GI___sigaction()  :0
+ 1 0x0000000000159ef7 __memcpy_avx_unaligned_erms()  :0
+ 2 0x00000000000821e3 _IO_file_xsgetn()  :0
+ 3 0x0000000000077039 __GI__IO_fread()  :0
+ 4 0x000000000040f75c read_ramses_data()  /home/dbi224/opt/pgalf_swift/opFoF/ramses2read.c:109
+ 5 0x0000000000406701 main()  /home/dbi224/opt/pgalf_swift/opFoF/opfof.c:571
+ 6 0x00000000000295d0 __libc_start_call_main()  ???:0
+ 7 0x0000000000029680 __libc_start_main_alias_2()  :0
+ 8 0x0000000000402345 _start()  ???:0
+=================================
+P has example link02= 0.215541 Mpc/h for a mass of 1e+11
+[grammar088:1494202:0:1494202] Caught signal 11 (Segmentation fault: address not mapped to object at address 0x20)
+reading ./FoF_Data/NewDD.00005/SN.00005.00000.info
+==== backtrace (tid:1494196) ====
+ 0 0x000000000003ebf0 __GI___sigaction()  :0
+ 1 0x0000000000159ef7 __memcpy_avx_unaligned_erms()  :0
+ 2 0x00000000000821e3 _IO_file_xsgetn()  :0
+ 3 0x0000000000077039 __GI__IO_fread()  :0
+ 4 0x000000000040f75c read_ramses_data()  /home/dbi224/opt/pgalf_swift/opFoF/ramses2read.c:109
+ 5 0x0000000000406701 main()  /home/dbi224/opt/pgalf_swift/opFoF/opfof.c:571
+ 6 0x00000000000295d0 __libc_start_call_main()  ???:0
+ 7 0x0000000000029680 __libc_start_main_alias_2()  :0
+ 8 0x0000000000402345 _start()  ???:0
+=================================
+Warning: different size of RamsesType.
+Warning: We cannot read the full precision parameter values from the binary format.
+So, we degrade the precision from double to float in each parameters.
+P0 has a periodic box of Lx=18 Ly=18 Lz=18
+P0 has pid 1494214 in hostname grammar088
+P0 size = 18 hubble = 69.33
+P0  omep = 0.287845 omeplam = 0.712155 smooth=0
+P0  anow = 0.067375 
+P0 nx = 0 ny= 0 nz= 0 
+P0 rscale = 1 vscale= 1
+P0 has file ranges 0 32
+P0 has read ./FoF_Data/NewDD.00005/SN.00005.DM.00000.dat with np= 540059
+==== backtrace (tid:1494202) ====
+ 0 0x000000000003ebf0 __GI___sigaction()  :0
+ 1 0x0000000000159ef7 __memcpy_avx_unaligned_erms()  :0
+ 2 0x00000000000821e3 _IO_file_xsgetn()  :0
+ 3 0x0000000000077039 __GI__IO_fread()  :0
+ 4 0x000000000040f75c read_ramses_data()  /home/dbi224/opt/pgalf_swift/opFoF/ramses2read.c:109
+ 5 0x0000000000406701 main()  /home/dbi224/opt/pgalf_swift/opFoF/opfof.c:571
+ 6 0x00000000000295d0 __libc_start_call_main()  ???:0
+ 7 0x0000000000029680 __libc_start_main_alias_2()  :0
+ 8 0x0000000000402345 _start()  ???:0
+=================================
+P has example link02= 0.215541 Mpc/h for a mass of 1e+11
+[grammar088:1494194:0:1494194] Caught signal 11 (Segmentation fault: address not mapped to object at address 0x20)
+reading ./FoF_Data/NewDD.00005/SN.00005.00000.info
+Warning: different size of RamsesType.
+Warning: We cannot read the full precision parameter values from the binary format.
+So, we degrade the precision from double to float in each parameters.
+P0 has a periodic box of Lx=18 Ly=18 Lz=18
+P0 has pid 1494213 in hostname grammar088
+P0 size = 18 hubble = 69.33
+P0  omep = 0.287845 omeplam = 0.712155 smooth=0
+P0  anow = 0.067375 
+P0 nx = 0 ny= 0 nz= 0 
+P0 rscale = 1 vscale= 1
+P0 has file ranges 0 32
+P0 has read ./FoF_Data/NewDD.00005/SN.00005.DM.00000.dat with np= 540059
+reading ./FoF_Data/NewDD.00005/SN.00005.00000.info
+Warning: different size of RamsesType.
+Warning: We cannot read the full precision parameter values from the binary format.
+So, we degrade the precision from double to float in each parameters.
+P has example link02= 0.215541 Mpc/h for a mass of 1e+11
+[grammar088:1494218:0:1494218] Caught signal 11 (Segmentation fault: address not mapped to object at address 0x20)
+P0 has a periodic box of Lx=18 Ly=18 Lz=18
+P0 has pid 1494216 in hostname grammar088
+P0 size = 18 hubble = 69.33
+P0  omep = 0.287845 omeplam = 0.712155 smooth=0
+P0  anow = 0.067375 
+P0 nx = 0 ny= 0 nz= 0 
+P0 rscale = 1 vscale= 1
+P0 has file ranges 0 32
+P0 has read ./FoF_Data/NewDD.00005/SN.00005.DM.00000.dat with np= 540059
+reading ./FoF_Data/NewDD.00005/SN.00005.00000.info
+Warning: different size of RamsesType.
+Warning: We cannot read the full precision parameter values from the binary format.
+So, we degrade the precision from double to float in each parameters.
+P has example link02= 0.215541 Mpc/h for a mass of 1e+11
+[grammar088:1494206:0:1494206] Caught signal 11 (Segmentation fault: address not mapped to object at address 0x20)
+P0 has a periodic box of Lx=18 Ly=18 Lz=18
+P0 has pid 1494221 in hostname grammar088
+P0 size = 18 hubble = 69.33
+P0  omep = 0.287845 omeplam = 0.712155 smooth=0
+P0  anow = 0.067375 
+P0 nx = 0 ny= 0 nz= 0 
+P0 rscale = 1 vscale= 1
+P0 has file ranges 0 32
+P0 has read ./FoF_Data/NewDD.00005/SN.00005.DM.00000.dat with np= 540059
+reading ./FoF_Data/NewDD.00005/SN.00005.00000.info
+Warning: different size of RamsesType.
+Warning: We cannot read the full precision parameter values from the binary format.
+So, we degrade the precision from double to float in each parameters.
+P0 has a periodic box of Lx=18 Ly=18 Lz=18
+P0 has pid 1494219 in hostname grammar088
+P0 size = 18 hubble = 69.33
+P0  omep = 0.287845 omeplam = 0.712155 smooth=0
+P0  anow = 0.067375 
+P0 nx = 0 ny= 0 nz= 0 
+P0 rscale = 1 vscale= 1
+P0 has file ranges 0 32
+P0 has read ./FoF_Data/NewDD.00005/SN.00005.DM.00000.dat with np= 540059
+==== backtrace (tid:1494194) ====
+ 0 0x000000000003ebf0 __GI___sigaction()  :0
+ 1 0x0000000000159ef7 __memcpy_avx_unaligned_erms()  :0
+ 2 0x00000000000821e3 _IO_file_xsgetn()  :0
+ 3 0x0000000000077039 __GI__IO_fread()  :0
+ 4 0x000000000040f75c read_ramses_data()  /home/dbi224/opt/pgalf_swift/opFoF/ramses2read.c:109
+ 5 0x0000000000406701 main()  /home/dbi224/opt/pgalf_swift/opFoF/opfof.c:571
+ 6 0x00000000000295d0 __libc_start_call_main()  ???:0
+ 7 0x0000000000029680 __libc_start_main_alias_2()  :0
+ 8 0x0000000000402345 _start()  ???:0
+=================================
+reading ./FoF_Data/NewDD.00005/SN.00005.00000.info
+Warning: different size of RamsesType.
+Warning: We cannot read the full precision parameter values from the binary format.
+So, we degrade the precision from double to float in each parameters.
+reading ./FoF_Data/NewDD.00005/SN.00005.00000.info
+Warning: different size of RamsesType.
+Warning: We cannot read the full precision parameter values from the binary format.
+So, we degrade the precision from double to float in each parameters.
+P0 has a periodic box of Lx=18 Ly=18 Lz=18
+P0 has pid 1494205 in hostname grammar088
+P0 size = 18 hubble = 69.33
+P0  omep = 0.287845 omeplam = 0.712155 smooth=0
+P0  anow = 0.067375 
+P0 nx = 0 ny= 0 nz= 0 
+P0 rscale = 1 vscale= 1
+P0 has file ranges 0 32
+P0 has read ./FoF_Data/NewDD.00005/SN.00005.DM.00000.dat with np= 540059
+P has example link02= 0.215541 Mpc/h for a mass of 1e+11
+[grammar088:1494220:0:1494220] Caught signal 11 (Segmentation fault: address not mapped to object at address 0x20)
+P0 has a periodic box of Lx=18 Ly=18 Lz=18
+P0 has pid 1494197 in hostname grammar088
+P0 size = 18 hubble = 69.33
+P0  omep = 0.287845 omeplam = 0.712155 smooth=0
+P0  anow = 0.067375 
+P0 nx = 0 ny= 0 nz= 0 
+P0 rscale = 1 vscale= 1
+P0 has file ranges 0 32
+P0 has read ./FoF_Data/NewDD.00005/SN.00005.DM.00000.dat with np= 540059
+reading ./FoF_Data/NewDD.00005/SN.00005.00000.info
+Warning: different size of RamsesType.
+Warning: We cannot read the full precision parameter values from the binary format.
+So, we degrade the precision from double to float in each parameters.
+reading ./FoF_Data/NewDD.00005/SN.00005.00000.info
+Warning: different size of RamsesType.
+Warning: We cannot read the full precision parameter values from the binary format.
+So, we degrade the precision from double to float in each parameters.
+reading ./FoF_Data/NewDD.00005/SN.00005.00000.info
+Warning: different size of RamsesType.
+Warning: We cannot read the full precision parameter values from the binary format.
+So, we degrade the precision from double to float in each parameters.
+==== backtrace (tid:1494218) ====
+ 0 0x000000000003ebf0 __GI___sigaction()  :0
+ 1 0x0000000000159ef7 __memcpy_avx_unaligned_erms()  :0
+ 2 0x00000000000821e3 _IO_file_xsgetn()  :0
+ 3 0x0000000000077039 __GI__IO_fread()  :0
+ 4 0x000000000040f75c read_ramses_data()  /home/dbi224/opt/pgalf_swift/opFoF/ramses2read.c:109
+ 5 0x0000000000406701 main()  /home/dbi224/opt/pgalf_swift/opFoF/opfof.c:571
+ 6 0x00000000000295d0 __libc_start_call_main()  ???:0
+ 7 0x0000000000029680 __libc_start_main_alias_2()  :0
+ 8 0x0000000000402345 _start()  ???:0
+=================================
+P0 has a periodic box of Lx=18 Ly=18 Lz=18
+P0 has pid 1494223 in hostname grammar088
+P0 size = 18 hubble = 69.33
+P0  omep = 0.287845 omeplam = 0.712155 smooth=0
+P0  anow = 0.067375 
+P0 nx = 0 ny= 0 nz= 0 
+P0 rscale = 1 vscale= 1
+P0 has file ranges 0 32
+P0 has read ./FoF_Data/NewDD.00005/SN.00005.DM.00000.dat with np= 540059
+P0 has a periodic box of Lx=18 Ly=18 Lz=18
+P0 has pid 1494195 in hostname grammar088
+P0 size = 18 hubble = 69.33
+P0  omep = 0.287845 omeplam = 0.712155 smooth=0
+P0  anow = 0.067375 
+P0 nx = 0 ny= 0 nz= 0 
+P0 rscale = 1 vscale= 1
+P0 has file ranges 0 32
+P0 has read ./FoF_Data/NewDD.00005/SN.00005.DM.00000.dat with np= 540059
+P0 has a periodic box of Lx=18 Ly=18 Lz=18
+P0 has pid 1494193 in hostname grammar088
+P0 size = 18 hubble = 69.33
+P0  omep = 0.287845 omeplam = 0.712155 smooth=0
+P0  anow = 0.067375 
+P0 nx = 0 ny= 0 nz= 0 
+P0 rscale = 1 vscale= 1
+P0 has file ranges 0 32
+P0 has read ./FoF_Data/NewDD.00005/SN.00005.DM.00000.dat with np= 540059
+==== backtrace (tid:1494206) ====
+ 0 0x000000000003ebf0 __GI___sigaction()  :0
+ 1 0x0000000000159ef7 __memcpy_avx_unaligned_erms()  :0
+ 2 0x00000000000821e3 _IO_file_xsgetn()  :0
+ 3 0x0000000000077039 __GI__IO_fread()  :0
+ 4 0x000000000040f75c read_ramses_data()  /home/dbi224/opt/pgalf_swift/opFoF/ramses2read.c:109
+ 5 0x0000000000406701 main()  /home/dbi224/opt/pgalf_swift/opFoF/opfof.c:571
+ 6 0x00000000000295d0 __libc_start_call_main()  ???:0
+ 7 0x0000000000029680 __libc_start_main_alias_2()  :0
+ 8 0x0000000000402345 _start()  ???:0
+=================================
+reading ./FoF_Data/NewDD.00005/SN.00005.00000.info
+Warning: different size of RamsesType.
+Warning: We cannot read the full precision parameter values from the binary format.
+So, we degrade the precision from double to float in each parameters.
+P0 has a periodic box of Lx=18 Ly=18 Lz=18
+P0 has pid 1494201 in hostname grammar088
+P0 size = 18 hubble = 69.33
+P0  omep = 0.287845 omeplam = 0.712155 smooth=0
+P0  anow = 0.067375 
+P0 nx = 0 ny= 0 nz= 0 
+P0 rscale = 1 vscale= 1
+P0 has file ranges 0 32
+P0 has read ./FoF_Data/NewDD.00005/SN.00005.DM.00000.dat with np= 540059
+reading ./FoF_Data/NewDD.00005/SN.00005.00000.info
+Warning: different size of RamsesType.
+Warning: We cannot read the full precision parameter values from the binary format.
+So, we degrade the precision from double to float in each parameters.
+reading ./FoF_Data/NewDD.00005/SN.00005.00000.info
+Warning: different size of RamsesType.
+Warning: We cannot read the full precision parameter values from the binary format.
+So, we degrade the precision from double to float in each parameters.
+P0 has a periodic box of Lx=18 Ly=18 Lz=18
+P0 has pid 1494199 in hostname grammar088
+P0 size = 18 hubble = 69.33
+P0  omep = 0.287845 omeplam = 0.712155 smooth=0
+P0  anow = 0.067375 
+P0 nx = 0 ny= 0 nz= 0 
+P0 rscale = 1 vscale= 1
+P0 has file ranges 0 32
+P0 has read ./FoF_Data/NewDD.00005/SN.00005.DM.00000.dat with np= 540059
+reading ./FoF_Data/NewDD.00005/SN.00005.00000.info
+Warning: different size of RamsesType.
+Warning: We cannot read the full precision parameter values from the binary format.
+So, we degrade the precision from double to float in each parameters.
+P0 has a periodic box of Lx=18 Ly=18 Lz=18
+P0 has pid 1494203 in hostname grammar088
+P0 size = 18 hubble = 69.33
+P0  omep = 0.287845 omeplam = 0.712155 smooth=0
+P0  anow = 0.067375 
+P0 nx = 0 ny= 0 nz= 0 
+P0 rscale = 1 vscale= 1
+P0 has file ranges 0 32
+P0 has read ./FoF_Data/NewDD.00005/SN.00005.DM.00000.dat with np= 540059
+P0 has a periodic box of Lx=18 Ly=18 Lz=18
+P0 has pid 1494217 in hostname grammar088
+P0 size = 18 hubble = 69.33
+P0  omep = 0.287845 omeplam = 0.712155 smooth=0
+P0  anow = 0.067375 
+P0 nx = 0 ny= 0 nz= 0 
+P0 rscale = 1 vscale= 1
+P0 has file ranges 0 32
+P0 has read ./FoF_Data/NewDD.00005/SN.00005.DM.00000.dat with np= 540059
+reading ./FoF_Data/NewDD.00005/SN.00005.00000.info
+Warning: different size of RamsesType.
+Warning: We cannot read the full precision parameter values from the binary format.
+So, we degrade the precision from double to float in each parameters.
+==== backtrace (tid:1494220) ====
+ 0 0x000000000003ebf0 __GI___sigaction()  :0
+ 1 0x0000000000159ef7 __memcpy_avx_unaligned_erms()  :0
+ 2 0x00000000000821e3 _IO_file_xsgetn()  :0
+ 3 0x0000000000077039 __GI__IO_fread()  :0
+ 4 0x000000000040f75c read_ramses_data()  /home/dbi224/opt/pgalf_swift/opFoF/ramses2read.c:109
+ 5 0x0000000000406701 main()  /home/dbi224/opt/pgalf_swift/opFoF/opfof.c:571
+ 6 0x00000000000295d0 __libc_start_call_main()  ???:0
+ 7 0x0000000000029680 __libc_start_main_alias_2()  :0
+ 8 0x0000000000402345 _start()  ???:0
+=================================
+P0 has a periodic box of Lx=18 Ly=18 Lz=18
+P0 has pid 1494211 in hostname grammar088
+P0 size = 18 hubble = 69.33
+P0  omep = 0.287845 omeplam = 0.712155 smooth=0
+P0  anow = 0.067375 
+P0 nx = 0 ny= 0 nz= 0 
+P0 rscale = 1 vscale= 1
+P0 has file ranges 0 32
+P0 has read ./FoF_Data/NewDD.00005/SN.00005.DM.00000.dat with np= 540059
+reading ./FoF_Data/NewDD.00005/SN.00005.00000.info
+Warning: different size of RamsesType.
+Warning: We cannot read the full precision parameter values from the binary format.
+So, we degrade the precision from double to float in each parameters.
+P has example link02= 0.215541 Mpc/h for a mass of 1e+11
+[grammar088:1494214:0:1494214] Caught signal 11 (Segmentation fault: address not mapped to object at address 0x20)
+reading ./FoF_Data/NewDD.00005/SN.00005.00000.info
+Warning: different size of RamsesType.
+Warning: We cannot read the full precision parameter values from the binary format.
+So, we degrade the precision from double to float in each parameters.
+P0 has a periodic box of Lx=18 Ly=18 Lz=18
+P0 has pid 1494215 in hostname grammar088
+P0 size = 18 hubble = 69.33
+P0  omep = 0.287845 omeplam = 0.712155 smooth=0
+P0  anow = 0.067375 
+P0 nx = 0 ny= 0 nz= 0 
+P0 rscale = 1 vscale= 1
+P0 has file ranges 0 32
+P0 has read ./FoF_Data/NewDD.00005/SN.00005.DM.00000.dat with np= 540059
+P0 has a periodic box of Lx=18 Ly=18 Lz=18
+P0 has pid 1494209 in hostname grammar088
+P0 size = 18 hubble = 69.33
+P0  omep = 0.287845 omeplam = 0.712155 smooth=0
+P0  anow = 0.067375 
+P0 nx = 0 ny= 0 nz= 0 
+P0 rscale = 1 vscale= 1
+P0 has file ranges 0 32
+P0 has read ./FoF_Data/NewDD.00005/SN.00005.DM.00000.dat with np= 540059
+==== backtrace (tid:1494214) ====
+ 0 0x000000000003ebf0 __GI___sigaction()  :0
+ 1 0x0000000000159ef7 __memcpy_avx_unaligned_erms()  :0
+ 2 0x00000000000821e3 _IO_file_xsgetn()  :0
+ 3 0x0000000000077039 __GI__IO_fread()  :0
+ 4 0x000000000040f75c read_ramses_data()  /home/dbi224/opt/pgalf_swift/opFoF/ramses2read.c:109
+ 5 0x0000000000406701 main()  /home/dbi224/opt/pgalf_swift/opFoF/opfof.c:571
+ 6 0x00000000000295d0 __libc_start_call_main()  ???:0
+ 7 0x0000000000029680 __libc_start_main_alias_2()  :0
+ 8 0x0000000000402345 _start()  ???:0
+=================================
+P has example link02= 0.215541 Mpc/h for a mass of 1e+11
+[grammar088:1494216:0:1494216] Caught signal 11 (Segmentation fault: address not mapped to object at address 0x20)
+P has example link02= 0.215541 Mpc/h for a mass of 1e+11
+[grammar088:1494213:0:1494213] Caught signal 11 (Segmentation fault: address not mapped to object at address 0x20)
+P has example link02= 0.215541 Mpc/h for a mass of 1e+11
+[grammar088:1494221:0:1494221] Caught signal 11 (Segmentation fault: address not mapped to object at address 0x20)
+==== backtrace (tid:1494216) ====
+ 0 0x000000000003ebf0 __GI___sigaction()  :0
+ 1 0x0000000000159ef7 __memcpy_avx_unaligned_erms()  :0
+ 2 0x00000000000821e3 _IO_file_xsgetn()  :0
+ 3 0x0000000000077039 __GI__IO_fread()  :0
+ 4 0x000000000040f75c read_ramses_data()  /home/dbi224/opt/pgalf_swift/opFoF/ramses2read.c:109
+ 5 0x0000000000406701 main()  /home/dbi224/opt/pgalf_swift/opFoF/opfof.c:571
+ 6 0x00000000000295d0 __libc_start_call_main()  ???:0
+ 7 0x0000000000029680 __libc_start_main_alias_2()  :0
+ 8 0x0000000000402345 _start()  ???:0
+=================================
+P has example link02= 0.215541 Mpc/h for a mass of 1e+11
+[grammar088:1494205:0:1494205] Caught signal 11 (Segmentation fault: address not mapped to object at address 0x20)
+P has example link02= 0.215541 Mpc/h for a mass of 1e+11
+[grammar088:1494219:0:1494219] Caught signal 11 (Segmentation fault: address not mapped to object at address 0x20)
+P has example link02= 0.215541 Mpc/h for a mass of 1e+11
+[grammar088:1494197:0:1494197] Caught signal 11 (Segmentation fault: address not mapped to object at address 0x20)
+P has example link02= 0.215541 Mpc/h for a mass of 1e+11
+[grammar088:1494195:0:1494195] Caught signal 11 (Segmentation fault: address not mapped to object at address 0x20)
+P has example link02= 0.215541 Mpc/h for a mass of 1e+11
+[grammar088:1494201:0:1494201] Caught signal 11 (Segmentation fault: address not mapped to object at address 0x20)
+==== backtrace (tid:1494213) ====
+ 0 0x000000000003ebf0 __GI___sigaction()  :0
+ 1 0x0000000000159ef7 __memcpy_avx_unaligned_erms()  :0
+ 2 0x00000000000821e3 _IO_file_xsgetn()  :0
+ 3 0x0000000000077039 __GI__IO_fread()  :0
+ 4 0x000000000040f75c read_ramses_data()  /home/dbi224/opt/pgalf_swift/opFoF/ramses2read.c:109
+ 5 0x0000000000406701 main()  /home/dbi224/opt/pgalf_swift/opFoF/opfof.c:571
+ 6 0x00000000000295d0 __libc_start_call_main()  ???:0
+ 7 0x0000000000029680 __libc_start_main_alias_2()  :0
+ 8 0x0000000000402345 _start()  ???:0
+=================================
+P has example link02= 0.215541 Mpc/h for a mass of 1e+11
+[grammar088:1494223:0:1494223] Caught signal 11 (Segmentation fault: address not mapped to object at address 0x20)
+P has example link02= 0.215541 Mpc/h for a mass of 1e+11
+[grammar088:1494199:0:1494199] Caught signal 11 (Segmentation fault: address not mapped to object at address 0x20)
+P has example link02= 0.215541 Mpc/h for a mass of 1e+11
+[grammar088:1494203:0:1494203] Caught signal 11 (Segmentation fault: address not mapped to object at address 0x20)
+==== backtrace (tid:1494221) ====
+ 0 0x000000000003ebf0 __GI___sigaction()  :0
+ 1 0x0000000000159ef7 __memcpy_avx_unaligned_erms()  :0
+ 2 0x00000000000821e3 _IO_file_xsgetn()  :0
+ 3 0x0000000000077039 __GI__IO_fread()  :0
+ 4 0x000000000040f75c read_ramses_data()  /home/dbi224/opt/pgalf_swift/opFoF/ramses2read.c:109
+ 5 0x0000000000406701 main()  /home/dbi224/opt/pgalf_swift/opFoF/opfof.c:571
+ 6 0x00000000000295d0 __libc_start_call_main()  ???:0
+ 7 0x0000000000029680 __libc_start_main_alias_2()  :0
+ 8 0x0000000000402345 _start()  ???:0
+=================================
+P has example link02= 0.215541 Mpc/h for a mass of 1e+11
+[grammar088:1494217:0:1494217] Caught signal 11 (Segmentation fault: address not mapped to object at address 0x20)
+==== backtrace (tid:1494205) ====
+ 0 0x000000000003ebf0 __GI___sigaction()  :0
+ 1 0x0000000000159ef7 __memcpy_avx_unaligned_erms()  :0
+ 2 0x00000000000821e3 _IO_file_xsgetn()  :0
+ 3 0x0000000000077039 __GI__IO_fread()  :0
+ 4 0x000000000040f75c read_ramses_data()  /home/dbi224/opt/pgalf_swift/opFoF/ramses2read.c:109
+ 5 0x0000000000406701 main()  /home/dbi224/opt/pgalf_swift/opFoF/opfof.c:571
+ 6 0x00000000000295d0 __libc_start_call_main()  ???:0
+ 7 0x0000000000029680 __libc_start_main_alias_2()  :0
+ 8 0x0000000000402345 _start()  ???:0
+=================================
+P has example link02= 0.215541 Mpc/h for a mass of 1e+11
+[grammar088:1494211:0:1494211] Caught signal 11 (Segmentation fault: address not mapped to object at address 0x20)
+==== backtrace (tid:1494219) ====
+ 0 0x000000000003ebf0 __GI___sigaction()  :0
+ 1 0x0000000000159ef7 __memcpy_avx_unaligned_erms()  :0
+ 2 0x00000000000821e3 _IO_file_xsgetn()  :0
+ 3 0x0000000000077039 __GI__IO_fread()  :0
+ 4 0x000000000040f75c read_ramses_data()  /home/dbi224/opt/pgalf_swift/opFoF/ramses2read.c:109
+ 5 0x0000000000406701 main()  /home/dbi224/opt/pgalf_swift/opFoF/opfof.c:571
+ 6 0x00000000000295d0 __libc_start_call_main()  ???:0
+ 7 0x0000000000029680 __libc_start_main_alias_2()  :0
+ 8 0x0000000000402345 _start()  ???:0
+=================================
+==== backtrace (tid:1494197) ====
+ 0 0x000000000003ebf0 __GI___sigaction()  :0
+ 1 0x0000000000159ef7 __memcpy_avx_unaligned_erms()  :0
+ 2 0x00000000000821e3 _IO_file_xsgetn()  :0
+ 3 0x0000000000077039 __GI__IO_fread()  :0
+ 4 0x000000000040f75c read_ramses_data()  /home/dbi224/opt/pgalf_swift/opFoF/ramses2read.c:109
+ 5 0x0000000000406701 main()  /home/dbi224/opt/pgalf_swift/opFoF/opfof.c:571
+ 6 0x00000000000295d0 __libc_start_call_main()  ???:0
+ 7 0x0000000000029680 __libc_start_main_alias_2()  :0
+ 8 0x0000000000402345 _start()  ???:0
+=================================
+P has example link02= 0.215541 Mpc/h for a mass of 1e+11
+[grammar088:1494215:0:1494215] Caught signal 11 (Segmentation fault: address not mapped to object at address 0x20)
+P has example link02= 0.215541 Mpc/h for a mass of 1e+11
+[grammar088:1494209:0:1494209] Caught signal 11 (Segmentation fault: address not mapped to object at address 0x20)
+P has example link02= 0.215541 Mpc/h for a mass of 1e+11
+[grammar088:1494193:0:1494193] Caught signal 11 (Segmentation fault: address not mapped to object at address 0x20)
+==== backtrace (tid:1494195) ====
+ 0 0x000000000003ebf0 __GI___sigaction()  :0
+ 1 0x0000000000159ef7 __memcpy_avx_unaligned_erms()  :0
+ 2 0x00000000000821e3 _IO_file_xsgetn()  :0
+ 3 0x0000000000077039 __GI__IO_fread()  :0
+ 4 0x000000000040f75c read_ramses_data()  /home/dbi224/opt/pgalf_swift/opFoF/ramses2read.c:109
+ 5 0x0000000000406701 main()  /home/dbi224/opt/pgalf_swift/opFoF/opfof.c:571
+ 6 0x00000000000295d0 __libc_start_call_main()  ???:0
+ 7 0x0000000000029680 __libc_start_main_alias_2()  :0
+ 8 0x0000000000402345 _start()  ???:0
+=================================
+==== backtrace (tid:1494201) ====
+ 0 0x000000000003ebf0 __GI___sigaction()  :0
+ 1 0x0000000000159ef7 __memcpy_avx_unaligned_erms()  :0
+ 2 0x00000000000821e3 _IO_file_xsgetn()  :0
+ 3 0x0000000000077039 __GI__IO_fread()  :0
+ 4 0x000000000040f75c read_ramses_data()  /home/dbi224/opt/pgalf_swift/opFoF/ramses2read.c:109
+ 5 0x0000000000406701 main()  /home/dbi224/opt/pgalf_swift/opFoF/opfof.c:571
+ 6 0x00000000000295d0 __libc_start_call_main()  ???:0
+ 7 0x0000000000029680 __libc_start_main_alias_2()  :0
+ 8 0x0000000000402345 _start()  ???:0
+=================================
+==== backtrace (tid:1494223) ====
+ 0 0x000000000003ebf0 __GI___sigaction()  :0
+ 1 0x0000000000159ef7 __memcpy_avx_unaligned_erms()  :0
+ 2 0x00000000000821e3 _IO_file_xsgetn()  :0
+ 3 0x0000000000077039 __GI__IO_fread()  :0
+ 4 0x000000000040f75c read_ramses_data()  /home/dbi224/opt/pgalf_swift/opFoF/ramses2read.c:109
+ 5 0x0000000000406701 main()  /home/dbi224/opt/pgalf_swift/opFoF/opfof.c:571
+ 6 0x00000000000295d0 __libc_start_call_main()  ???:0
+ 7 0x0000000000029680 __libc_start_main_alias_2()  :0
+ 8 0x0000000000402345 _start()  ???:0
+=================================
+==== backtrace (tid:1494199) ====
+ 0 0x000000000003ebf0 __GI___sigaction()  :0
+ 1 0x0000000000159ef7 __memcpy_avx_unaligned_erms()  :0
+ 2 0x00000000000821e3 _IO_file_xsgetn()  :0
+ 3 0x0000000000077039 __GI__IO_fread()  :0
+ 4 0x000000000040f75c read_ramses_data()  /home/dbi224/opt/pgalf_swift/opFoF/ramses2read.c:109
+ 5 0x0000000000406701 main()  /home/dbi224/opt/pgalf_swift/opFoF/opfof.c:571
+ 6 0x00000000000295d0 __libc_start_call_main()  ???:0
+ 7 0x0000000000029680 __libc_start_main_alias_2()  :0
+ 8 0x0000000000402345 _start()  ???:0
+=================================
+==== backtrace (tid:1494203) ====
+ 0 0x000000000003ebf0 __GI___sigaction()  :0
+ 1 0x0000000000159ef7 __memcpy_avx_unaligned_erms()  :0
+ 2 0x00000000000821e3 _IO_file_xsgetn()  :0
+ 3 0x0000000000077039 __GI__IO_fread()  :0
+ 4 0x000000000040f75c read_ramses_data()  /home/dbi224/opt/pgalf_swift/opFoF/ramses2read.c:109
+ 5 0x0000000000406701 main()  /home/dbi224/opt/pgalf_swift/opFoF/opfof.c:571
+ 6 0x00000000000295d0 __libc_start_call_main()  ???:0
+ 7 0x0000000000029680 __libc_start_main_alias_2()  :0
+ 8 0x0000000000402345 _start()  ???:0
+=================================
+==== backtrace (tid:1494217) ====
+ 0 0x000000000003ebf0 __GI___sigaction()  :0
+ 1 0x0000000000159ef7 __memcpy_avx_unaligned_erms()  :0
+ 2 0x00000000000821e3 _IO_file_xsgetn()  :0
+ 3 0x0000000000077039 __GI__IO_fread()  :0
+ 4 0x000000000040f75c read_ramses_data()  /home/dbi224/opt/pgalf_swift/opFoF/ramses2read.c:109
+ 5 0x0000000000406701 main()  /home/dbi224/opt/pgalf_swift/opFoF/opfof.c:571
+ 6 0x00000000000295d0 __libc_start_call_main()  ???:0
+ 7 0x0000000000029680 __libc_start_main_alias_2()  :0
+ 8 0x0000000000402345 _start()  ???:0
+=================================
+==== backtrace (tid:1494211) ====
+ 0 0x000000000003ebf0 __GI___sigaction()  :0
+ 1 0x0000000000159ef7 __memcpy_avx_unaligned_erms()  :0
+ 2 0x00000000000821e3 _IO_file_xsgetn()  :0
+ 3 0x0000000000077039 __GI__IO_fread()  :0
+ 4 0x000000000040f75c read_ramses_data()  /home/dbi224/opt/pgalf_swift/opFoF/ramses2read.c:109
+ 5 0x0000000000406701 main()  /home/dbi224/opt/pgalf_swift/opFoF/opfof.c:571
+ 6 0x00000000000295d0 __libc_start_call_main()  ???:0
+ 7 0x0000000000029680 __libc_start_main_alias_2()  :0
+ 8 0x0000000000402345 _start()  ???:0
+=================================
+==== backtrace (tid:1494209) ====
+ 0 0x000000000003ebf0 __GI___sigaction()  :0
+ 1 0x0000000000159ef7 __memcpy_avx_unaligned_erms()  :0
+==== backtrace (tid:1494215) ====
+ 0 0x000000000003ebf0 __GI___sigaction()  :0
+ 1 0x0000000000159ef7 __memcpy_avx_unaligned_erms()  :0
+ 2 0x00000000000821e3 _IO_file_xsgetn()  :0
+ 3 0x0000000000077039 __GI__IO_fread()  :0
+ 4 0x000000000040f75c read_ramses_data()  /home/dbi224/opt/pgalf_swift/opFoF/ramses2read.c:109
+ 5 0x0000000000406701 main()  /home/dbi224/opt/pgalf_swift/opFoF/opfof.c:571
+ 6 0x00000000000295d0 __libc_start_call_main()  ???:0
+ 7 0x0000000000029680 __libc_start_main_alias_2()  :0
+ 8 0x0000000000402345 _start()  ???:0
+=================================
+ 2 0x00000000000821e3 _IO_file_xsgetn()  :0
+ 3 0x0000000000077039 __GI__IO_fread()  :0
+ 4 0x000000000040f75c read_ramses_data()  /home/dbi224/opt/pgalf_swift/opFoF/ramses2read.c:109
+ 5 0x0000000000406701 main()  /home/dbi224/opt/pgalf_swift/opFoF/opfof.c:571
+ 6 0x00000000000295d0 __libc_start_call_main()  ???:0
+ 7 0x0000000000029680 __libc_start_main_alias_2()  :0
+ 8 0x0000000000402345 _start()  ???:0
+=================================
+==== backtrace (tid:1494193) ====
+ 0 0x000000000003ebf0 __GI___sigaction()  :0
+ 1 0x0000000000159ef7 __memcpy_avx_unaligned_erms()  :0
+ 2 0x00000000000821e3 _IO_file_xsgetn()  :0
+ 3 0x0000000000077039 __GI__IO_fread()  :0
+ 4 0x000000000040f75c read_ramses_data()  /home/dbi224/opt/pgalf_swift/opFoF/ramses2read.c:109
+ 5 0x0000000000406701 main()  /home/dbi224/opt/pgalf_swift/opFoF/opfof.c:571
+ 6 0x00000000000295d0 __libc_start_call_main()  ???:0
+ 7 0x0000000000029680 __libc_start_main_alias_2()  :0
+ 8 0x0000000000402345 _start()  ???:0
+=================================
+srun: error: grammar088: tasks 0,2,4,6,8,10,12,16,18,20,22-24,26,28,30: Segmentation fault
+srun: error: grammar088: tasks 5,14-15,19: Segmentation fault (core dumped)
+srun: error: grammar088: tasks 7,17,31: Segmentation fault (core dumped)
+srun: error: grammar088: tasks 3,9,21,29: Segmentation fault (core dumped)
+srun: error: grammar088: tasks 1,11,13,25,27: Segmentation fault (core dumped)

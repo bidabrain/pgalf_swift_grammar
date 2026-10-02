@@ -37,8 +37,8 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/dbi224/local/omp5/ParMETIS/lib
 
 
 #--- 2) 路径 ---------------------------------------------------
-SIM=/gpfs/dbi224/swift_eagle_flamingo/flamingo_spin_jet_th_kin25
-OUT=/gpfs/dbi224/swift_eagle_flamingo/pgalf/flamingo_spin_jet_th_kin25
+SIM=/gpfs/dbi224/swift_eagle_flamingo/flamingo_spin_jet
+OUT=/gpfs/dbi224/swift_eagle_flamingo/pgalf/flamingo_spin_jet
 PGALF=/home/dbi224/opt/pgalf_swift
 
 #--- 3) 跑流水线 ----------------------------------

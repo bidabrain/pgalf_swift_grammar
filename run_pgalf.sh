@@ -16,19 +16,35 @@ NSPLIT=64                            # NewDD number of slabs     (-n)
 NP=64                                # MPI ranks for gfind       (-N)
 MPIRUN="mpirun -np"                  # MPI launcher              (-m)  SLURM: "srun -n"
 STAGES=all                           # stages: all | newdd,opfof,gfind,galcenter (-S)
+ZMAX=""                              # skip snapshots with z > ZMAX (-z)  empty = no limit
 
 usage() {
-    echo "Usage: $0 -i <sim_dir> -o <out_dir> -s <snap|a-b> [-n nsplit] [-N np]"
-    echo "          [-p pgalf_dir] [-x prefix] [-m \"mpirun -np\"] [-S stages]"
+    echo "Usage: $0 -i <sim_dir> -o <out_dir> -s <snap|a-b|all> [-n nsplit] [-N np]"
+    echo "          [-p pgalf_dir] [-x prefix] [-m \"mpirun -np\"] [-S stages] [-z zmax]"
     exit 1
 }
 
+# Read redshift of a SWIFT HDF5 snapshot (needs h5dump on PATH).
+# Tries /Header/Redshift, /Cosmology/Redshift, then derives from Scale-factor.
+# Echoes the redshift, or empty string if it cannot be determined.
+get_redshift() {
+    local file="$1" z a
+    for attr in /Header/Redshift /Cosmology/Redshift; do
+        z=$(h5dump -a "$attr" "$file" 2>/dev/null | awk '/\(0\):/{print $2; exit}')
+        [ -n "$z" ] && { echo "$z"; return 0; }
+    done
+    a=$(h5dump -a /Header/Scale-factor "$file" 2>/dev/null | awk '/\(0\):/{print $2; exit}')
+    [ -n "$a" ] && { awk "BEGIN{printf \"%.6f\", 1.0/$a - 1.0}"; return 0; }
+    echo ""; return 1
+}
+
 #--- Parse arguments -----------------------------------------
-while getopts "i:o:s:n:N:p:x:m:S:h" opt; do
+while getopts "i:o:s:n:N:p:x:m:S:z:h" opt; do
     case $opt in
         i) SIM=$OPTARG ;;   o) OUT=$OPTARG ;;   s) SNAPSPEC=$OPTARG ;;
         n) NSPLIT=$OPTARG ;; N) NP=$OPTARG ;;   p) PGALF=$OPTARG ;;
         x) PREFIX=$OPTARG ;; m) MPIRUN=$OPTARG ;; S) STAGES=$OPTARG ;;
+        z) ZMAX=$OPTARG ;;
         h|*) usage ;;
     esac
 done
@@ -58,7 +74,7 @@ fi
 want() { [ "$STAGES" = all ] || [[ ",$STAGES," == *",$1,"* ]]; }
 
 mkdir -p "$OUT"
-echo "=== PGalF: in=$SIM out=$OUT snaps=$(echo $SNAPS|tr '\n' ' ') nsplit=$NSPLIT np=$NP stages=$STAGES ==="
+echo "=== PGalF: in=$SIM out=$OUT snaps=$(echo $SNAPS|tr '\n' ' ') nsplit=$NSPLIT np=$NP stages=$STAGES zmax=${ZMAX:-none} ==="
 
 #--- Run the pipeline for each snapshot ----------------------
 for SNAP in $SNAPS; do
@@ -68,6 +84,18 @@ for SNAP in $SNAPS; do
 
     echo; echo "########## snapshot $SNAP (${S4}) ##########"
     if [ ! -f "$SRC" ]; then echo "!! snapshot not found: $SRC -- skipping"; continue; fi
+
+    # Skip high-redshift snapshots (FoF percolates / crashes before structure forms)
+    if [ -n "$ZMAX" ]; then
+        Z=$(get_redshift "$SRC")
+        if [ -z "$Z" ]; then
+            echo "   warning: cannot read redshift from $SRC -- running anyway"
+        elif awk "BEGIN{exit !($Z > $ZMAX)}"; then
+            echo "   skip: z=$Z > zmax=$ZMAX"; continue
+        else
+            echo "   z=$Z (<= $ZMAX)"
+        fi
+    fi
 
     ln -sf "$SRC" "$LINK"      # symlink to the name NewDD expects: snap_XXXX.hdf5
     cd "$OUT"
