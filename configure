@@ -38,7 +38,7 @@ GALCENTER_NDUST="4"
 
 # NewGalFinder defaults
 GALFINDER_NMEG="90000"
-GALFINDER_NCHEM="3"
+GALFINDER_NCHEM="9"
 GALFINDER_FFTW_LIBS="-lfftw3f_omp -lfftw3f"
 
 # NewDD defaults
