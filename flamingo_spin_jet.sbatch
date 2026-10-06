@@ -44,4 +44,4 @@ PGALF=/home/dbi224/opt/pgalf_swift
 #--- 3) 跑流水线 ----------------------------------
 # SLURM 上用 srun 启动 MPI (比 mpirun 稳); 若 srun 报 PMI/PMIx 错, 换回默认 mpirun
 cd "$PGALF"
-./run_pgalf.sh -i "$SIM" -o "$OUT" -s all -n 32 -N 32 -z 15 -m "srun -n"
+./run_pgalf.sh -i "$SIM" -o "$OUT" -s all -n 32 -N 32 -z 15 -m "srun -n" -r

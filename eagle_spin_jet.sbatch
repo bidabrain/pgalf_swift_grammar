@@ -37,11 +37,11 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/dbi224/local/omp5/ParMETIS/lib
 
 
 #--- 2) 路径 ---------------------------------------------------
-SIM=/gpfs/dbi224/swift_eagle_flamingo/flamingo_spin_jet_th_kin25
-OUT=/gpfs/dbi224/swift_eagle_flamingo/pgalf/flamingo_spin_jet_th_kin25
+SIM=/gpfs/dbi224/swift_eagle_flamingo/eagle_spin_jet
+OUT=/gpfs/dbi224/swift_eagle_flamingo/pgalf/eagle_spin_jet
 PGALF=/home/dbi224/opt/pgalf_swift
 
 #--- 3) 跑流水线 ----------------------------------
 # SLURM 上用 srun 启动 MPI (比 mpirun 稳); 若 srun 报 PMI/PMIx 错, 换回默认 mpirun
 cd "$PGALF"
-./run_pgalf.sh -i "$SIM" -o "$OUT" -s all -n 32 -N 32 -z 15 -m "srun -n" -r
+./run_pgalf_eagle.sh -i "$SIM" -o "$OUT" -s all -n 32 -N 32 -z 15 -m "srun -n"
