@@ -17,10 +17,11 @@ NP=64                                # MPI ranks for gfind       (-N)
 MPIRUN="mpirun -np"                  # MPI launcher              (-m)  SLURM: "srun -n"
 STAGES=all                           # stages: all | newdd,opfof,gfind,galcenter (-S)
 ZMAX=""                              # skip snapshots with z > ZMAX (-z)  empty = no limit
+RESUME=0                             # resume: skip snapshots already finished (-r)
 
 usage() {
     echo "Usage: $0 -i <sim_dir> -o <out_dir> -s <snap|a-b|all> [-n nsplit] [-N np]"
-    echo "          [-p pgalf_dir] [-x prefix] [-m \"mpirun -np\"] [-S stages] [-z zmax]"
+    echo "          [-p pgalf_dir] [-x prefix] [-m \"mpirun -np\"] [-S stages] [-z zmax] [-r]"
     exit 1
 }
 
@@ -39,15 +40,26 @@ get_redshift() {
 }
 
 #--- Parse arguments -----------------------------------------
-while getopts "i:o:s:n:N:p:x:m:S:z:h" opt; do
+while getopts "i:o:s:n:N:p:x:m:S:z:rh" opt; do
     case $opt in
         i) SIM=$OPTARG ;;   o) OUT=$OPTARG ;;   s) SNAPSPEC=$OPTARG ;;
         n) NSPLIT=$OPTARG ;; N) NP=$OPTARG ;;   p) PGALF=$OPTARG ;;
         x) PREFIX=$OPTARG ;; m) MPIRUN=$OPTARG ;; S) STAGES=$OPTARG ;;
-        z) ZMAX=$OPTARG ;;
+        z) ZMAX=$OPTARG ;;  r) RESUME=1 ;;
         h|*) usage ;;
     esac
 done
+
+# Final output file of the last requested stage (used by -r resume to detect
+# a snapshot that already finished). dir = $OUT/FoF_Data/FoF.<S5>/
+done_marker() {
+    local s5="$1" d="$OUT/FoF_Data/FoF.$1"
+    if   want galcenter; then echo "$d/GALFIND.CENTER.$s5"
+    elif want gfind;     then echo "$d/GALCATALOG.LIST.$s5"
+    elif want opfof;     then echo "$d/FoF_halo_cat.$s5"
+    else                      echo "$OUT/FoF_Data/NewDD.$s5"
+    fi
+}
 
 if [ -z "$SIM" ] || [ -z "$OUT" ] || [ -z "$SNAPSPEC" ]; then
     echo "Error: -i (input) -o (output) -s (snapshot) are required"; usage
@@ -84,6 +96,13 @@ for SNAP in $SNAPS; do
 
     echo; echo "########## snapshot $SNAP (${S4}) ##########"
     if [ ! -f "$SRC" ]; then echo "!! snapshot not found: $SRC -- skipping"; continue; fi
+
+    # Resume: skip snapshots whose final-stage output already exists
+    if [ "$RESUME" = 1 ]; then
+        S5=$(printf "%05d" "$SNAP")
+        MARK=$(done_marker "$S5")
+        if [ -e "$MARK" ]; then echo "   resume: already done ($MARK) -- skipping"; continue; fi
+    fi
 
     # Skip high-redshift snapshots (FoF percolates / crashes before structure forms)
     if [ -n "$ZMAX" ]; then
