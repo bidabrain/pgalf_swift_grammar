@@ -122,7 +122,7 @@ for SNAP in $SNAPS; do
     if want newdd;     then echo ">>> [1/4] NewDD";     "$PGALF/NewDD/newdd.exe" "$SNAP" "$NSPLIT"; fi
     if want opfof;     then echo ">>> [2/4] opFoF";      $MPIRUN "$NSPLIT" "$PGALF/opFoF/opfof.exe" "$SNAP" "$NSPLIT"; fi
     if want gfind;     then echo ">>> [3/4] gfind";      $MPIRUN "$NP" "$PGALF/NewGalFinder/gfind.exe" "$SNAP"; fi
-    if want galcenter; then echo ">>> [4/4] galcenter"; "$PGALF/GalCenter/galcenter.exe" "$SNAP"; fi
+    if want galcenter; then echo ">>> [4/4] galcenter"; $MPIRUN "$NP" "$PGALF/GalCenter/galcenter.exe" "$SNAP"; fi
 
     echo "########## snapshot $SNAP done ##########"
 done
