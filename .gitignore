@@ -1,0 +1,15 @@
+# build artifacts
+*.o
+*.a
+*.exe
+*.mod
+*.d
+*.obj
+*.bak
+*~
+core
+# runtime outputs
+FoF_Data/
+FoF_Garbage/
+snap_*.hdf5
+*.log
