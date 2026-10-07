@@ -3,7 +3,7 @@
 #SBATCH --partition=normal
 #SBATCH --time=48:00:00
 #SBATCH -N 1 
-#SBATCH --ntasks-per-node=32
+#SBATCH --ntasks-per-node=4
 #SBATCH --cpus-per-task=1
 #SBATCH --exclude=grammar082
 #SBATCH --exclusive
@@ -44,4 +44,4 @@ PGALF=/home/dbi224/opt/pgalf_swift
 #--- 3) 跑流水线 ----------------------------------
 # SLURM 上用 srun 启动 MPI (比 mpirun 稳); 若 srun 报 PMI/PMIx 错, 换回默认 mpirun
 cd "$PGALF"
-./run_pgalf_eagle.sh -i "$SIM" -o "$OUT" -s all -n 32 -N 32 -z 15 -m "srun -n"
+./run_pgalf_eagle.sh -i "$SIM" -o "$OUT" -s 42 -n 4  -N 4 -z 15 -m "srun -n"

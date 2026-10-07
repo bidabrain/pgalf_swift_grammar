@@ -12,8 +12,8 @@ SIM=""                               # snapshot input dir       (-i)  required
 OUT=""                               # output dir               (-o)  required
 SNAPSPEC=""                          # snapshot number or range (-s)  required
 PREFIX=snap                     # snapshot filename prefix (-x)  -> PREFIX_XXXX.hdf5
-NSPLIT=64                            # NewDD number of slabs     (-n)
-NP=64                                # MPI ranks for gfind       (-N)
+NSPLIT=4                           # NewDD number of slabs     (-n)
+NP=4                                # MPI ranks for gfind       (-N)
 MPIRUN="mpirun -np"                  # MPI launcher              (-m)  SLURM: "srun -n"
 STAGES=all                           # stages: all | newdd,opfof,gfind,galcenter (-S)
 ZMAX=""                              # skip snapshots with z > ZMAX (-z)  empty = no limit
