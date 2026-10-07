@@ -74,7 +74,7 @@ A GCC-incompatible `aa = (void*)star = malloc(...)` (cast-as-lvalue) in
 | HDF5 include/lib | `/opt/ohpc/pub/libs/gnu14/hdf5/1.14.6/{include,lib}` | `NewDD/Makefile` (`HDF5_INC`/`HDF5_LIB`) |
 | FFTW (float+omp) | `/home/dbi224/local/omp5/fftw3` | `NewGalFinder/Makefile`, `configure` |
 | Cosmology (Ωm, Ωb, H0, ΩΛ) | 0.287845, 0.047143, 69.33, 0.712155 | `REQUIRED_*` in `opFoF/opfof.c`, `GalCenter/galcenter.c`, **`NewGalFinder/gfind.c`** (all three!) |
-| `NCHEM` (particle struct size, must match across stages) | 9 | `NewDD/Makefile`, `opFoF/Rules.make`, `GalCenter/Makefile`, `NewGalFinder/Makefile` |
+| `NCHEM`, `NDUST`, `NPRE` (particle struct size — **must match across ALL stages**, incl. NewGalFinder) | 9, 4, 8 | `NewDD/Makefile`, `opFoF/Rules.make`, `GalCenter/Makefile`, `NewGalFinder/Makefile` |
 | `NMEG` (per-rank memory pool, MB) | NewDD 20000, opFoF 17000, gfind 12000 | respective Makefiles / `opFoF/Rules.make` |
 
 > Cosmology is **compile-time** (`#define REQUIRED_OMEGA_M ...`). All three C

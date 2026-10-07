@@ -26,7 +26,7 @@ INCLUDES = -I$(FFTW)/include
 
 DFLAGS = -DNMEG=12000L
 
-OPT = -O2 -fcommon  -fopenmp -DINDEX -DVarPM   -DXYZDBL -DNENER=0 -DNPRE=8 -DREAD_SINK -DNCHEM=9 -DADV
+OPT = -O2 -fcommon  -fopenmp -DINDEX -DVarPM   -DXYZDBL -DNENER=0 -DNPRE=8 -DREAD_SINK -DNCHEM=9 -DNDUST=4 -DADV
 
 FFLAGS = $(FDFLAGS) $(OPT)  -mcmodel=medium -fpermissive
 CFLAGS = $(DFLAGS)  $(OPT) $(INCLUDES)  -DDEBUG=1 -DLOG=1 -std=legacy -fallow-argument-mismatch
