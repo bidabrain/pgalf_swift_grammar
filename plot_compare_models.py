@@ -27,6 +27,7 @@ from plot_stellar_halo_relation import (
     load_relation, moster13, behroozi19_um, _um_param_file,
 )
 from plot_bh_stellar_relation import load_bh_stellar, reines_volonteri15
+from plot_gsmf import compute_gsmf, overlay_baldry
 
 
 def parse_roots(root_args):
@@ -129,8 +130,35 @@ def main():
     out2 = args.outdir / f"mbh_mstar_compare_{args.snapshot:05d}.png"
     fig.tight_layout(); fig.savefig(out2, dpi=160); plt.close(fig)
 
+    # ------------------- GSMF -------------------
+    fig, ax = plt.subplots(figsize=(7.2, 5.6))
+    hub = z = None
+    xlo, xhi = [], []
+    for i, (label, root) in enumerate(models):
+        try:
+            centers, logphi, err, header = compute_gsmf(root, args.snapshot)
+        except (FileNotFoundError, ValueError) as e:
+            print(f"{label}: skip gsmf ({e})"); continue
+        if len(centers) == 0:
+            print(f"{label}: no galaxies for gsmf"); continue
+        ax.errorbar(centers, logphi, yerr=err, fmt="o", ms=4, capsize=2,
+                    color=colors[i], label=label)
+        hub, z = header["hubble"], header["redshift"]
+        xlo.append(centers.min()); xhi.append(centers.max())
+    h = _h(hub)
+    if xlo:
+        overlay_baldry(ax, (min(xlo), max(xhi)), h, z)
+    ax.set_xlabel(r"$\log_{10}(M_\star/[M_\odot/h])$")
+    ax.set_ylabel(r"$\log_{10}(\phi/[(h/{\rm Mpc})^3\,{\rm dex}^{-1}])$")
+    ax.set_title(f"GSMF, snapshot {args.snapshot:04d}, z={z:.3g}")
+    ax.grid(True, alpha=0.25)
+    ax.legend(frameon=False, fontsize=9, loc="lower left")
+    out3 = args.outdir / f"gsmf_compare_{args.snapshot:05d}.png"
+    fig.tight_layout(); fig.savefig(out3, dpi=160); plt.close(fig)
+
     print(f"wrote {out1.resolve()}")
     print(f"wrote {out2.resolve()}")
+    print(f"wrote {out3.resolve()}")
 
 
 if __name__ == "__main__":
