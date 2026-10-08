@@ -27,7 +27,7 @@ from plot_stellar_halo_relation import (
     load_relation, moster13, behroozi19_um, _um_param_file,
 )
 from plot_bh_stellar_relation import load_bh_stellar, reines_volonteri15
-from plot_gsmf import compute_gsmf, overlay_baldry
+from plot_gsmf import compute_gsmf, overlay_calib
 
 
 def parse_roots(root_args):
@@ -53,6 +53,8 @@ def main():
     p.add_argument("--snapshot", type=int, required=True)
     p.add_argument("--population", choices=("central", "subhalo"), default="central")
     p.add_argument("--um-dir", type=Path, default=None)
+    p.add_argument("--calib", choices=("baldry2012", "davidzon2017", "none"),
+                   default="davidzon2017", help="GSMF calibration overlay")
     p.add_argument("--outdir", type=Path, default=Path("."))
     args = p.parse_args()
 
@@ -147,7 +149,7 @@ def main():
         xlo.append(centers.min()); xhi.append(centers.max())
     h = _h(hub)
     if xlo:
-        overlay_baldry(ax, (min(xlo), max(xhi)), h, z)
+        overlay_calib(ax, (min(xlo), max(xhi)), h, z, args.calib)
     ax.set_xlabel(r"$\log_{10}(M_\star/[M_\odot/h])$")
     ax.set_ylabel(r"$\log_{10}(\phi/[(h/{\rm Mpc})^3\,{\rm dex}^{-1}])$")
     ax.set_title(f"GSMF, snapshot {args.snapshot:04d}, z={z:.3g}")
