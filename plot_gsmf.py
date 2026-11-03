@@ -2,8 +2,7 @@
 """Galaxy Stellar Mass Function (GSMF) from PGalF catalogs, with calibration.
 
 GSMF = galaxies per comoving volume per dex of stellar mass. Plotted in
-h-free units: M* in Msun, phi in Mpc^-3 dex^-1. This matches SWIFT/FLAMINGO
-catalogs, whose BoxSize and masses are already h-free (Mpc, Msun).
+sim-native units: M* in Msun/h, phi in (Mpc/h)^-3 dex^-1.
 
 Calibration (choose with --calib):
   baldry2012   : Baldry+2012 GAMA double-Schechter, z~0
@@ -12,10 +11,9 @@ Calibration (choose with --calib):
                  the redshift bin of the snapshot
   none
 Plus optional --obs-file (overlaid as points):
-    columns  logM[Msun]  logPhi[Mpc^-3 dex^-1]  [err_dex]   (h-free)
+    columns  logM[Msun]  logPhi[Mpc^-3 dex^-1]  [err_dex]
 
-Published fits assume h=0.7; converted to the snapshot's h (M* ~ h^-2,
-phi ~ h^3) so they can be compared h-free with the sim.
+Published fits are in h=0.7 (Msun, Mpc^-3); converted to the sim h internally.
 Run from the directory with read_pgalf_catalog.py.
 
     python plot_gsmf.py --root /gpfs/.../pgalf/eagle_spin_jet --snapshot 42 \
@@ -32,8 +30,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from read_pgalf_catalog import read_fof_catalog, read_galaxy_catalog
-
-H_OBS = 0.7  # the h assumed by the published Baldry/Davidzon fits
 
 
 # Davidzon+2017 COSMOS2015, TOTAL sample (Table 1, h=0.7).
@@ -90,55 +86,54 @@ def davidzon2017(logM_msun, redshift):
 
 def compute_gsmf(root, snapshot, mass_lo=7.0, mass_hi=12.0, dlog=0.25, min_count=1):
     """Sim GSMF (all galaxies with mstar>0). Returns
-    (logM_centers[Msun], logPhi[Mpc^-3 dex^-1], err_dex, header)."""
+    (logM_centers[Msun/h], logPhi[(Mpc/h)^-3 dex^-1], err_dex, header)."""
     step = f"{snapshot:05d}"
     fof_dir = Path(root) / "FoF_Data" / f"FoF.{step}"
     header, _ = read_fof_catalog(fof_dir / f"FoF_halo_cat.{step}")
     _, subs, _ = read_galaxy_catalog(fof_dir / f"GALCATALOG.LIST.{step}")
 
-    mstar = subs["mstar"][subs["mstar"] > 0]          # Msun (h-free)
-    volume = header["box_size"] ** 3                  # Mpc^3 (h-free)
+    mstar = subs["mstar"][subs["mstar"] > 0]          # Msun/h
+    volume = header["box_size"] ** 3                  # (Mpc/h)^3
     edges = np.arange(mass_lo, mass_hi + 1e-9, dlog)
     counts, _ = np.histogram(np.log10(mstar), bins=edges)
     centers = 0.5 * (edges[:-1] + edges[1:])
     good = counts >= min_count
-    phi = counts / (volume * dlog)                    # Mpc^-3 dex^-1
+    phi = counts / (volume * dlog)                    # (Mpc/h)^-3 dex^-1
     err_dex = 0.434 / np.sqrt(np.where(counts > 0, counts, np.nan))
     return centers[good], np.log10(phi[good]), err_dex[good], header
 
 
 def overlay_calib(ax, xrange, h, z, which):
-    """Overplot a Schechter calibration (published at h=0.7) converted to the
-    snapshot's h: M* ~ h^-2 (from fluxes), phi ~ h^3 (comoving density)."""
+    """Overplot a Schechter calibration, converted to Msun/h & (Mpc/h)^-3."""
     if which == "none":
         return
-    grid = np.linspace(xrange[0], xrange[1], 200)     # log10(M*/Msun), sim h
-    logM_07 = grid + 2.0 * np.log10(h / H_OBS)        # same mass in h=0.7 units
+    grid_h = np.linspace(xrange[0], xrange[1], 200)
+    logM_msun = grid_h - np.log10(h)                  # Msun/h -> Msun
     if which == "baldry2012":
-        phi_07 = baldry2012(logM_07)
+        phi_mpc = baldry2012(logM_msun)
         label = "Baldry+2012 (GAMA, z~0)"
         if abs(z) > 0.5:
             label += f"  [!! snapshot z={z:.2g}]"
     elif which == "driver2022":
-        phi_07 = driver2022(logM_07)
+        phi_mpc = driver2022(logM_msun)
         label = "Driver+2022 (GAMA DR4, z<0.1)"
         if abs(z) > 0.5:
             label += f"  [!! snapshot z={z:.2g}]"
     elif which == "davidzon2017":
-        phi_07, label = davidzon2017(logM_07, z)
-        if phi_07 is None:
+        phi_mpc, label = davidzon2017(logM_msun, z)
+        if phi_mpc is None:
             print(f"davidzon2017: z={z:.3g} outside 0.2-5.5, no curve"); return
     else:
         raise ValueError(which)
-    phi = phi_07 * (h / H_OBS) ** 3                   # Mpc^-3 at the sim's h
-    ax.plot(grid, np.log10(phi), color="crimson", lw=2, zorder=3, label=label)
+    logphi_h = np.log10(phi_mpc) - 3.0 * np.log10(h)  # Mpc^-3 -> (Mpc/h)^-3
+    ax.plot(grid_h, logphi_h, color="crimson", lw=2, zorder=3, label=label)
 
 
-def overlay_obs_file(ax, path, label=None):
-    """Obs GSMF file (h-free): logM[Msun] logPhi[Mpc^-3/dex] [err_dex]."""
+def overlay_obs_file(ax, path, h, label=None):
+    """Obs GSMF file: logM[Msun] logPhi[Mpc^-3/dex] [err_dex]."""
     d = np.loadtxt(path)
-    x = d[:, 0]                                       # Msun (h-free), as given
-    y = d[:, 1]                                       # Mpc^-3 (h-free), as given
+    x = d[:, 0] + np.log10(h)                         # Msun -> Msun/h
+    y = d[:, 1] - 3.0 * np.log10(h)                   # Mpc^-3 -> (Mpc/h)^-3
     err = d[:, 2] if d.shape[1] > 2 else None
     ax.errorbar(x, y, yerr=err, fmt="s", color="navy", ms=4, capsize=2,
                 zorder=4, label=label or f"obs: {Path(path).name}")
@@ -167,10 +162,10 @@ def main():
                 capsize=2, label=f"PGalF {Path(args.root).name}")
     overlay_calib(ax, (centers.min(), centers.max()), h, z, args.calib)
     if args.obs_file:
-        overlay_obs_file(ax, args.obs_file)
+        overlay_obs_file(ax, args.obs_file, h)
 
-    ax.set_xlabel(r"$\log_{10}(M_\star/M_\odot)$")
-    ax.set_ylabel(r"$\log_{10}(\phi/[{\rm Mpc}^{-3}\,{\rm dex}^{-1}])$")
+    ax.set_xlabel(r"$\log_{10}(M_\star/[M_\odot/h])$")
+    ax.set_ylabel(r"$\log_{10}(\phi/[(h/{\rm Mpc})^3\,{\rm dex}^{-1}])$")
     ax.set_title(f"GSMF  snapshot {args.snapshot:04d}, z={z:.3g}")
     ax.grid(True, alpha=0.25)
     ax.legend(frameon=False, fontsize=9, loc="lower left")

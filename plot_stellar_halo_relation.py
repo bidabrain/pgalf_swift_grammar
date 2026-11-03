@@ -19,7 +19,7 @@ from read_pgalf_catalog import read_fof_catalog, read_galaxy_catalog
 
 
 def load_relation(root, snapshot, population):
-    """Return host-halo and stellar masses in Msun (SWIFT/FLAMINGO are h-free)."""
+    """Return host-halo and stellar masses in Msun/h."""
     step = f"{snapshot:05d}"
     fof_dir = Path(root) / "FoF_Data" / f"FoF.{step}"
     fof_file = fof_dir / f"FoF_halo_cat.{step}"
@@ -165,21 +165,24 @@ def main():
         alpha=0.55,
         linewidths=0,
     )
-    # Sim masses are h-free (Msun); the published relations are in Msun too,
-    # so overlay directly with no little-h juggling.
+    # Some PGALF headers store H0 in km/s/Mpc rather than the dimensionless h.
+    hubble = header["hubble"]
+    if hubble > 1.0:
+        hubble /= 100.0
+
     log_mhalo_grid = np.linspace(
         np.log10(halo_mass).min(), np.log10(halo_mass).max(), 200
     )
     ax.plot(
         log_mhalo_grid,
-        moster13(log_mhalo_grid, redshift),
+        moster13(log_mhalo_grid - np.log10(hubble), redshift) + np.log10(hubble),
         color="crimson",
         lw=2,
         zorder=3,
         label="Moster, Naab & White (2013), MNRAS 428, 3121",
     )
 
-    # Behroozi+2019 (UniverseMachine DR1) central SHMR, Msun (h-free)
+    # Behroozi+2019 (UniverseMachine) central SHMR, converted Msun -> Msun/h
     if args.um_dir is not None:
         pf = _um_param_file(args.um_dir, args.population)
         if pf is None:
@@ -191,16 +194,16 @@ def main():
                       "skipping overlay")
             else:
                 ax.plot(
-                    m_um,
-                    sm_um,
+                    m_um + np.log10(hubble),
+                    sm_um + np.log10(hubble),
                     color="navy", lw=2, ls="--", zorder=3,
                     label="Behroozi+2019 (UniverseMachine DR1)",
                 )
 
     ax.legend(frameon=False, loc="upper left", fontsize=9)
 
-    ax.set_xlabel(r"$\log_{10}(M_{\rm halo}/M_\odot)$")
-    ax.set_ylabel(r"$\log_{10}(M_\star/M_\odot)$")
+    ax.set_xlabel(r"$\log_{10}(M_{\rm halo}/[M_\odot/h])$")
+    ax.set_ylabel(r"$\log_{10}(M_\star/[M_\odot/h])$")
     ax.set_title(
         f"PGALF stellar-to-halo mass relation "
         f"snapshot {args.snapshot:04d}, z={redshift:.3g} ({args.population})"
