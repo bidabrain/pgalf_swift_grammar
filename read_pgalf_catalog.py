@@ -98,6 +98,86 @@ GALCENTER_DTYPE = np.dtype(
 )
 
 
+# GALFIND.DATA per-particle layout. Halo and subhalo headers are both
+# 6*int32 + 11*float64 = 112 bytes. Particle record sizes (bytes):
+_GALFIND_HDR_BYTES = 6 * 4 + 11 * 8        # 112
+_GALFIND_DM_BYTES = 96                      # == star record size
+_GALFIND_GAS_BYTES = 104
+_GALFIND_SINK_BYTES = 168
+
+# One star particle, matching read_PGalF_v1.py's STAR record.
+STAR_RECORD_DTYPE = np.dtype(
+    [
+        ("pos", "<f8", (3,)),
+        ("vel", "<f8", (3,)),
+        ("mass", "<f8"),
+        ("mass0", "<f8"),
+        ("tp", "<f8"),
+        ("zp", "<f8"),
+        ("id", "<i4"),
+        ("family", "i1"),
+        ("tag", "i1"),
+        ("_pad", "<i2"),
+        ("level", "<i4"),
+        ("_dum", "<i4"),
+    ]
+)
+assert STAR_RECORD_DTYPE.itemsize == _GALFIND_DM_BYTES
+
+
+def read_galfind_star_particles(filename):
+    """Iterate GALFIND.DATA, yielding (com_xyz, star_pos, star_mass) per subhalo
+    in the SAME order as GALCATALOG.LIST. DM/gas/sink blocks are skipped.
+
+    com_xyz : the subhalo centre-of-mass stored in its header (code units)
+    star_pos: (N, 3) star positions, star_mass: (N,) star masses
+    Positions and masses are in the catalogue's little-h code units.
+    """
+    path = Path(filename)
+    size = path.stat().st_size
+    with open(path, "rb") as f:
+        while f.tell() < size:
+            halo_hdr = f.read(_GALFIND_HDR_BYTES)
+            if len(halo_hdr) < _GALFIND_HDR_BYTES:
+                break
+            nsub = int(np.frombuffer(halo_hdr, dtype="<i4", count=1)[0])
+            for _ in range(nsub):
+                hdr = f.read(_GALFIND_HDR_BYTES)
+                if len(hdr) < _GALFIND_HDR_BYTES:
+                    raise ValueError(f"Truncated subhalo header: {filename}")
+                counts = np.frombuffer(hdr, dtype="<i4", count=6)
+                ndm, ngas, nsink, nst = (int(counts[0]), int(counts[1]),
+                                         int(counts[2]), int(counts[3]))
+                com = np.frombuffer(hdr[24:24 + 88], dtype="<f8", count=11)[5:8].copy()
+                f.seek(ndm * _GALFIND_DM_BYTES
+                       + ngas * _GALFIND_GAS_BYTES
+                       + nsink * _GALFIND_SINK_BYTES, 1)
+                stars = np.fromfile(f, dtype=STAR_RECORD_DTYPE, count=nst)
+                if len(stars) != nst:
+                    raise ValueError(f"Truncated star block: {filename}")
+                yield com, stars["pos"], stars["mass"]
+
+
+def aperture_stellar_mass(filename, radius, box_size, centers=None):
+    """Stellar mass within `radius` (code units) of each subhalo centre,
+    periodic in `box_size`. Returns an array aligned with GALCATALOG order.
+
+    radius, box_size : same (little-h, comoving) length units as the positions.
+    centers          : optional (N, 3) centres; default = each subhalo's COM.
+    """
+    out = []
+    for i, (com, pos, mass) in enumerate(read_galfind_star_particles(filename)):
+        if len(mass) == 0:
+            out.append(0.0)
+            continue
+        c = com if centers is None else centers[i]
+        dx = pos - c
+        dx -= box_size * np.round(dx / box_size)        # periodic minimum image
+        inside = (dx * dx).sum(axis=1) < radius * radius
+        out.append(float(mass[inside].sum()))
+    return np.asarray(out, dtype=np.float64)
+
+
 def read_fof_catalog(filename):
     """Return the FoF header and all FoF halo records."""
     with open(filename, "rb") as stream:
