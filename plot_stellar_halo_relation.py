@@ -15,11 +15,16 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
-from read_pgalf_catalog import read_fof_catalog, read_galaxy_catalog
+from read_pgalf_catalog import (read_fof_catalog, read_galaxy_catalog,
+                                 aperture_stellar_mass)
 
 
-def load_relation(root, snapshot, population):
-    """Return host-halo and stellar masses in Msun/h."""
+def load_relation(root, snapshot, population, aperture_kpc=None):
+    """Return host-halo and stellar masses in Msun/h.
+
+    Halo mass is the host total mass (no aperture). Stellar mass uses a 3D
+    proper-kpc aperture (from GALFIND.DATA) when aperture_kpc>0, else the
+    catalogue's total bound M*."""
     step = f"{snapshot:05d}"
     fof_dir = Path(root) / "FoF_Data" / f"FoF.{step}"
     fof_file = fof_dir / f"FoF_halo_cat.{step}"
@@ -28,19 +33,35 @@ def load_relation(root, snapshot, population):
     header, _ = read_fof_catalog(fof_file)
     hosts, subhalos, host_ids = read_galaxy_catalog(galaxy_file)
 
+    if aperture_kpc and aperture_kpc > 0:
+        h = header["hubble"]
+        h = h / 100.0 if h > 1.0 else h
+        radius = (aperture_kpc / 1000.0) / header["anow"] * h   # pkpc -> cMpc/h
+        data_file = fof_dir / f"GALFIND.DATA.{step}"
+        if not data_file.exists():
+            raise SystemExit(f"--aperture-kpc set but {data_file} is missing")
+        mstar_all = aperture_stellar_mass(data_file, radius, header["box_size"])
+        if len(mstar_all) != len(subhalos):
+            raise SystemExit(f"GALFIND.DATA subhalos ({len(mstar_all)}) != "
+                             f"GALCATALOG ({len(subhalos)})")
+    else:
+        mstar_all = subhalos["mstar"]
+
     halo_masses = []
     stellar_masses = []
     for host_id, host in enumerate(hosts):
-        members = subhalos[host_ids == host_id]
-        members = members[members["mstar"] > 0]
-        if len(members) == 0 or host["totm"] <= 0:
+        sel = host_ids == host_id
+        m_mstar = mstar_all[sel]
+        keep = m_mstar > 0
+        m_mstar = m_mstar[keep]
+        if len(m_mstar) == 0 or host["totm"] <= 0:
             continue
 
         if population == "central":
-            members = members[[int(np.argmax(members["mstar"]))]]
+            m_mstar = m_mstar[[int(np.argmax(m_mstar))]]
 
-        halo_masses.extend([host["totm"]] * len(members))
-        stellar_masses.extend(members["mstar"])
+        halo_masses.extend([host["totm"]] * len(m_mstar))
+        stellar_masses.extend(m_mstar)
 
     return header, np.asarray(halo_masses), np.asarray(stellar_masses)
 
@@ -143,10 +164,17 @@ def main():
         help="UniverseMachine DR1 dir (or params dir/file) to overlay "
              "Behroozi+2019 central SHMR",
     )
+    parser.add_argument(
+        "--aperture-kpc",
+        type=float,
+        default=50.0,
+        help="3D stellar aperture [proper kpc] from GALFIND.DATA (COLIBRE/obs "
+             "use 50); pass <=0 for total bound M*. Halo mass is unaffected.",
+    )
     args = parser.parse_args()
 
     header, halo_mass, stellar_mass = load_relation(
-        args.root, args.snapshot, args.population
+        args.root, args.snapshot, args.population, aperture_kpc=args.aperture_kpc
     )
     if len(halo_mass) == 0:
         raise SystemExit("No positive-stellar-mass PGALF galaxies found")
@@ -204,9 +232,11 @@ def main():
 
     ax.set_xlabel(r"$\log_{10}(M_{\rm halo}/[M_\odot/h])$")
     ax.set_ylabel(r"$\log_{10}(M_\star/[M_\odot/h])$")
+    ap = (f"{args.aperture_kpc:g} pkpc aperture"
+          if args.aperture_kpc and args.aperture_kpc > 0 else "total $M_\\star$")
     ax.set_title(
         f"PGALF stellar-to-halo mass relation "
-        f"snapshot {args.snapshot:04d}, z={redshift:.3g} ({args.population})"
+        f"snapshot {args.snapshot:04d}, z={redshift:.3g} ({args.population}, {ap})"
     )
     ax.grid(True, alpha=0.25)
     fig.tight_layout()

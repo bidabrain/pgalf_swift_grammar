@@ -2,7 +2,9 @@
 """Galaxy Stellar Mass Function (GSMF) from PGalF catalogs, with calibration.
 
 GSMF = galaxies per comoving volume per dex of stellar mass. Plotted in
-sim-native units: M* in Msun/h, phi in (Mpc/h)^-3 dex^-1.
+sim-native units: M* in Msun/h, phi in (Mpc/h)^-3 dex^-1. M* defaults to a 3D
+50 proper-kpc aperture (COLIBRE/obs convention, from GALFIND.DATA); use
+--aperture-kpc to change it, or --aperture-kpc 0 for the total bound M*.
 
 Calibration (choose with --calib):
   baldry2012   : Baldry+2012 GAMA double-Schechter, z~0
@@ -29,7 +31,8 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
-from read_pgalf_catalog import read_fof_catalog, read_galaxy_catalog
+from read_pgalf_catalog import (read_fof_catalog, read_galaxy_catalog,
+                                 aperture_stellar_mass)
 
 
 # Davidzon+2017 COSMOS2015, TOTAL sample (Table 1, h=0.7).
@@ -84,15 +87,31 @@ def davidzon2017(logM_msun, redshift):
     return None, None
 
 
-def compute_gsmf(root, snapshot, mass_lo=7.0, mass_hi=12.0, dlog=0.25, min_count=1):
+def compute_gsmf(root, snapshot, mass_lo=7.0, mass_hi=12.0, dlog=0.25, min_count=1,
+                 aperture_kpc=None):
     """Sim GSMF (all galaxies with mstar>0). Returns
-    (logM_centers[Msun/h], logPhi[(Mpc/h)^-3 dex^-1], err_dex, header)."""
+    (logM_centers[Msun/h], logPhi[(Mpc/h)^-3 dex^-1], err_dex, header).
+
+    aperture_kpc>0 uses M* within that 3D proper-kpc aperture (from GALFIND.DATA,
+    COLIBRE/obs convention); otherwise the catalogue's total bound M* is used."""
     step = f"{snapshot:05d}"
     fof_dir = Path(root) / "FoF_Data" / f"FoF.{step}"
     header, _ = read_fof_catalog(fof_dir / f"FoF_halo_cat.{step}")
     _, subs, _ = read_galaxy_catalog(fof_dir / f"GALCATALOG.LIST.{step}")
 
-    mstar = subs["mstar"][subs["mstar"] > 0]          # Msun/h
+    if aperture_kpc and aperture_kpc > 0:
+        h = _h(header["hubble"])
+        radius = (aperture_kpc / 1000.0) / header["anow"] * h   # pkpc -> cMpc/h
+        data_file = fof_dir / f"GALFIND.DATA.{step}"
+        if not data_file.exists():
+            raise SystemExit(f"--aperture-kpc set but {data_file} is missing")
+        mstar_all = aperture_stellar_mass(data_file, radius, header["box_size"])
+        if len(mstar_all) != len(subs):
+            raise SystemExit(f"GALFIND.DATA subhalos ({len(mstar_all)}) != "
+                             f"GALCATALOG ({len(subs)})")
+        mstar = mstar_all[mstar_all > 0]              # Msun/h
+    else:
+        mstar = subs["mstar"][subs["mstar"] > 0]      # Msun/h
     volume = header["box_size"] ** 3                  # (Mpc/h)^3
     edges = np.arange(mass_lo, mass_hi + 1e-9, dlog)
     counts, _ = np.histogram(np.log10(mstar), bins=edges)
@@ -149,10 +168,14 @@ def main():
                    default="davidzon2017")
     p.add_argument("--obs-file", type=Path, default=None,
                    help="logM[Msun] logPhi[Mpc^-3/dex] [err_dex]")
+    p.add_argument("--aperture-kpc", type=float, default=50.0,
+                   help="3D stellar aperture [proper kpc] from GALFIND.DATA "
+                        "(COLIBRE/obs use 50); pass <=0 for total bound M*")
     p.add_argument("--output", type=Path, default=None)
     args = p.parse_args()
 
-    centers, logphi, err, header = compute_gsmf(args.root, args.snapshot, dlog=args.dlog)
+    centers, logphi, err, header = compute_gsmf(
+        args.root, args.snapshot, dlog=args.dlog, aperture_kpc=args.aperture_kpc)
     if len(centers) == 0:
         raise SystemExit("No galaxies with mstar>0 found")
     z = header["redshift"]; h = _h(header["hubble"])
@@ -166,7 +189,9 @@ def main():
 
     ax.set_xlabel(r"$\log_{10}(M_\star/[M_\odot/h])$")
     ax.set_ylabel(r"$\log_{10}(\phi/[(h/{\rm Mpc})^3\,{\rm dex}^{-1}])$")
-    ax.set_title(f"GSMF  snapshot {args.snapshot:04d}, z={z:.3g}")
+    ap = (f"{args.aperture_kpc:g} pkpc aperture"
+          if args.aperture_kpc and args.aperture_kpc > 0 else "total $M_\\star$")
+    ax.set_title(f"GSMF  snapshot {args.snapshot:04d}, z={z:.3g}  ({ap})")
     ax.grid(True, alpha=0.25)
     ax.legend(frameon=False, fontsize=9, loc="lower left")
     fig.tight_layout()
