@@ -112,6 +112,15 @@ Size cuts with the default build: opFoF keeps FoF groups with ≥20 particles
 `NewGalFinder/params.h` sits under `#ifdef OLD` and is not compiled. Apply your
 own cut (e.g. on `npstar`) when analysing low-mass galaxies.
 
+gfind also switches peak finder per FoF halo (`subhaloden.mod6.c`, `subhalo_den`):
+halos with ≤32 star particles (`NUMNEIGHBOR`) or M*<`MINSTELLARMASS` use an
+unweighted all-particle SPH number density (DM-dominated; one peak ⇒ the whole
+FoF halo becomes one galaxy, no unbinding; no peak above `PEAKTHRESHOLD` ⇒ the
+halo is dropped), the rest use a mass-weighted stellar TSC density with
+Gaussian smoothing (`-DADV`). The same `PEAKTHRESHOLD` is compared against
+different quantities in the two branches. Expect a feature in the GSMF near
+M* ≈ 32 × (star particle mass).
+
 ### 6. SLURM batch
 
 Request `--ntasks=<nsplit>` (NOT `--cpus-per-task=<n>`): opFoF is MPI, not
@@ -140,6 +149,15 @@ python plot_stellar_halo_relation.py --root <out_dir> --snapshot 274 \
   catalogue's total bound M*. Several values are overplotted: GSMF curves
   per aperture; for the SHMR, light scatter plus a binned median per aperture
   (`--dlog`, default 0.2 dex). `GALFIND.DATA` is read once for all apertures.
+- `--min-npstar N` (both scripts, default 0 = off): keep only galaxies with
+  at least N bound star particles (`npstar` in `GALCATALOG.LIST`), for every
+  aperture; in the SHMR the cut is applied before the central is chosen. The
+  script prints the typical star-particle mass (median `mstar/npstar`) and the
+  M* this corresponds to. The cut is on the *total* bound count, so aperture
+  curves are not sharply truncated at N × m★. Below ~100 star particles the
+  GSMF is resolution-dominated (and gfind switches peak finders at 32 star
+  particles per FoF halo, see "Size cuts" above), so compare runs with e.g.
+  `--min-npstar 0`, `32`, `100`, `200` before trusting the low-mass end.
 - `--calib` (GSMF): `driver2022`, `baldry2012` (z≈0), `davidzon2017`
   (0.2<z<5.5, picks the snapshot's bin), `none`; `--obs-file` overlays points.
 - Units are sim-native: M* in Msun/h, φ in (Mpc/h)⁻³ dex⁻¹; published fits are

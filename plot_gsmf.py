@@ -89,11 +89,13 @@ def davidzon2017(logM_msun, redshift):
     return None, None
 
 
-def load_stellar_masses(root, snapshot, apertures_kpc):
+def load_stellar_masses(root, snapshot, apertures_kpc, min_npstar=0):
     """Per-subhalo M* [Msun/h] for each entry of `apertures_kpc`. An entry >0
     is a 3D proper-kpc aperture (from GALFIND.DATA, COLIBRE/obs convention);
     <=0 or None means the catalogue's total bound M*. GALFIND.DATA is read
-    once for all apertures. Returns (list of arrays, header)."""
+    once for all apertures. Subhalos with fewer than `min_npstar` bound star
+    particles get M*=0 (i.e. are dropped from the GSMF) in every array.
+    Returns (list of arrays, header)."""
     step = f"{snapshot:05d}"
     fof_dir = Path(root) / "FoF_Data" / f"FoF.{step}"
     header, _ = read_fof_catalog(fof_dir / f"FoF_halo_cat.{step}")
@@ -113,7 +115,20 @@ def load_stellar_masses(root, snapshot, apertures_kpc):
                              f"GALCATALOG ({len(subs)})")
         by_ap = {a: mstar_ap[:, j] for j, a in enumerate(ap_kpc)}
     masses = [by_ap[a] if (a and a > 0) else subs["mstar"] for a in apertures_kpc]
+    if min_npstar > 0:
+        keep = subs["npstar"] >= min_npstar
+        masses = [np.where(keep, m, 0.0) for m in masses]
     return masses, header
+
+
+def star_particle_mass(root, snapshot):
+    """Median M*/npstar over galaxies with stars [Msun/h]: a typical star
+    particle mass, to translate a --min-npstar cut into an M* scale."""
+    step = f"{snapshot:05d}"
+    _, subs, _ = read_galaxy_catalog(
+        Path(root) / "FoF_Data" / f"FoF.{step}" / f"GALCATALOG.LIST.{step}")
+    s = subs[subs["npstar"] > 0]
+    return float(np.median(s["mstar"] / s["npstar"])) if len(s) else np.nan
 
 
 def gsmf_from_masses(mstar, box_size, mass_lo=7.0, mass_hi=12.0, dlog=0.25,
@@ -194,10 +209,19 @@ def main():
                    help="3D stellar aperture(s) [proper kpc] from GALFIND.DATA "
                         "(COLIBRE/obs use 50); several values are overplotted, "
                         "e.g. --aperture-kpc 0 30 50 100; <=0 means total bound M*")
+    p.add_argument("--min-npstar", type=int, default=0,
+                   help="only count galaxies with at least this many bound star "
+                        "particles (GALCATALOG npstar); applied to every aperture")
     p.add_argument("--output", type=Path, default=None)
     args = p.parse_args()
 
-    masses, header = load_stellar_masses(args.root, args.snapshot, args.aperture_kpc)
+    masses, header = load_stellar_masses(args.root, args.snapshot, args.aperture_kpc,
+                                         min_npstar=args.min_npstar)
+    if args.min_npstar > 0:
+        m_sp = star_particle_mass(args.root, args.snapshot)
+        print(f"--min-npstar {args.min_npstar}: star particle mass ~{m_sp:.3g} Msun/h, "
+              f"i.e. total M* >~ {args.min_npstar * m_sp:.3g} Msun/h "
+              f"(log {np.log10(args.min_npstar * m_sp):.2f})")
     z = header["redshift"]; h = _h(header["hubble"])
     multi = len(args.aperture_kpc) > 1
 
@@ -229,6 +253,8 @@ def main():
     else:
         a = args.aperture_kpc[0]
         ap = f"{a:g} pkpc aperture" if a and a > 0 else "total $M_\\star$"
+    if args.min_npstar > 0:
+        ap += f", $N_\\star\\geq{args.min_npstar}$"
     ax.set_title(f"GSMF  snapshot {args.snapshot:04d}, z={z:.3g}  ({ap})")
     ax.grid(True, alpha=0.25)
     ax.legend(frameon=False, fontsize=9, loc="lower left")

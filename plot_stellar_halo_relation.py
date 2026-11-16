@@ -19,7 +19,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from read_pgalf_catalog import read_galaxy_catalog
-from plot_gsmf import load_stellar_masses
+from plot_gsmf import load_stellar_masses, star_particle_mass
 
 
 def _select(hosts, host_ids, mstar_all, population):
@@ -39,24 +39,26 @@ def _select(hosts, host_ids, mstar_all, population):
     return host_m[sel], mstar_all[sel]
 
 
-def load_relations(root, snapshot, population, apertures_kpc):
+def load_relations(root, snapshot, population, apertures_kpc, min_npstar=0):
     """Return (header, [(halo_mass, stellar_mass), ...]) in Msun/h, one pair
     per entry of apertures_kpc.
 
     Halo mass is the host total mass (no aperture). Stellar mass uses a 3D
     proper-kpc aperture (from GALFIND.DATA) when the entry is >0, else the
-    catalogue's total bound M*."""
+    catalogue's total bound M*. Subhalos with fewer than `min_npstar` bound
+    star particles are dropped before the central is chosen."""
     step = f"{snapshot:05d}"
     galaxy_file = Path(root) / "FoF_Data" / f"FoF.{step}" / f"GALCATALOG.LIST.{step}"
     hosts, _, host_ids = read_galaxy_catalog(galaxy_file)
-    masses, header = load_stellar_masses(root, snapshot, apertures_kpc)
+    masses, header = load_stellar_masses(root, snapshot, apertures_kpc,
+                                         min_npstar=min_npstar)
     return header, [_select(hosts, host_ids, m, population) for m in masses]
 
 
-def load_relation(root, snapshot, population, aperture_kpc=None):
+def load_relation(root, snapshot, population, aperture_kpc=None, min_npstar=0):
     """Single-aperture load_relations: (header, halo_mass, stellar_mass)."""
     header, [(halo_mass, stellar_mass)] = load_relations(
-        root, snapshot, population, [aperture_kpc])
+        root, snapshot, population, [aperture_kpc], min_npstar=min_npstar)
     return header, halo_mass, stellar_mass
 
 
@@ -188,11 +190,21 @@ def main():
     parser.add_argument("--dlog", type=float, default=0.2,
                         help="halo-mass bin width [dex] for the medians "
                              "(multi-aperture only)")
+    parser.add_argument("--min-npstar", type=int, default=0,
+                        help="only keep galaxies with at least this many bound star "
+                             "particles (GALCATALOG npstar); applied to every "
+                             "aperture, before the central is chosen")
     args = parser.parse_args()
 
     header, relations = load_relations(
-        args.root, args.snapshot, args.population, args.aperture_kpc
+        args.root, args.snapshot, args.population, args.aperture_kpc,
+        min_npstar=args.min_npstar,
     )
+    if args.min_npstar > 0:
+        m_sp = star_particle_mass(args.root, args.snapshot)
+        print(f"--min-npstar {args.min_npstar}: star particle mass ~{m_sp:.3g} Msun/h, "
+              f"i.e. total M* >~ {args.min_npstar * m_sp:.3g} Msun/h "
+              f"(log {np.log10(args.min_npstar * m_sp):.2f})")
     if all(len(hm) == 0 for hm, _ in relations):
         raise SystemExit("No positive-stellar-mass PGALF galaxies found")
     multi = len(args.aperture_kpc) > 1
@@ -260,6 +272,8 @@ def main():
     else:
         a = args.aperture_kpc[0]
         ap = f"{a:g} pkpc aperture" if a and a > 0 else "total $M_\\star$"
+    if args.min_npstar > 0:
+        ap += f", $N_\\star\\geq{args.min_npstar}$"
     ax.set_title(
         f"PGALF stellar-to-halo mass relation "
         f"snapshot {args.snapshot:04d}, z={redshift:.3g}\n({args.population}, {ap})"
