@@ -102,7 +102,15 @@ expects (`snap_0042.hdf5`) automatically by the driver script:
 
 Output per snapshot `NNNNN` → `<out_dir>/FoF_Data/FoF.NNNNN/`:
 `FoF_halo_cat.NNNNN` (halos), `GALCATALOG.LIST.NNNNN` (galaxies/subhalos),
-`GALFIND.CENTER.NNNNN` (centers). See `read_pgalf_catalog.py` for the formats.
+`GALFIND.DATA.NNNNN` (per-subhalo member particles), `GALFIND.CENTER.NNNNN`
+(centers). See `read_pgalf_catalog.py` for the formats.
+
+Size cuts with the default build: opFoF keeps FoF groups with ≥20 particles
+(all types, `MinNumMem` in `opFoF/fof.h`), and gfind only processes hosts with
+≥30 (`gfind.c`), so every `GALCATALOG.LIST` host has ≥30 particles. There is
+**no** minimum particle count for a subhalo/galaxy: the `MINCORENMEM` cut in
+`NewGalFinder/params.h` sits under `#ifdef OLD` and is not compiled. Apply your
+own cut (e.g. on `npstar`) when analysing low-mass galaxies.
 
 ### 6. SLURM batch
 
@@ -111,6 +119,36 @@ OpenMP. Example header: `-N 1 --ntasks=32 --cpus-per-task=1 --exclusive --mem=0`
 then `export OMP_NUM_THREADS=1` and call `run_pgalf.sh ... -m "srun -n"`. For
 many snapshots use a job array (`#SBATCH --array=a-b%N`, one snapshot per task
 via `-s $SLURM_ARRAY_TASK_ID`).
+
+### 7. Analysis plots
+
+Run from the repo root (they import `read_pgalf_catalog.py`). `--root` is the
+`run_pgalf.sh` `<out_dir>`.
+
+```bash
+# Galaxy stellar mass function vs. a Schechter calibration
+python plot_gsmf.py --root <out_dir> --snapshot 274 --dlog 0.2 \
+    --calib driver2022 --aperture-kpc 0 30 50 100 --output gsmf.png
+
+# Stellar-to-halo mass relation (Moster+13; Behroozi+19 with --um-dir)
+python plot_stellar_halo_relation.py --root <out_dir> --snapshot 274 \
+    --population central --aperture-kpc 0 30 50 100 --output shmr.png
+```
+
+- `--aperture-kpc` (default `50`): M* inside a 3D proper-kpc aperture around
+  the subhalo centre of mass, computed from `GALFIND.DATA`; `0` (or <0) = the
+  catalogue's total bound M*. Several values are overplotted: GSMF curves
+  per aperture; for the SHMR, light scatter plus a binned median per aperture
+  (`--dlog`, default 0.2 dex). `GALFIND.DATA` is read once for all apertures.
+- `--calib` (GSMF): `driver2022`, `baldry2012` (z≈0), `davidzon2017`
+  (0.2<z<5.5, picks the snapshot's bin), `none`; `--obs-file` overlays points.
+- Units are sim-native: M* in Msun/h, φ in (Mpc/h)⁻³ dex⁻¹; published fits are
+  converted from h=0.7.
+- `GALFIND.DATA` record sizes depend on the gfind build flags (`NCHEM`,
+  `NDUST`, …). The reader auto-detects them from the file size and
+  `GALCATALOG.LIST`, so no edits are needed after a rebuild. A
+  `Truncated subhalo header` error means an old (pre-`3d0b545`) reader with
+  hard-coded sizes: `git pull`.
 
 ---
 
