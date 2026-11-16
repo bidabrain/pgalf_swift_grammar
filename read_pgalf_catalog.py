@@ -224,22 +224,27 @@ def aperture_stellar_mass(filename, radius, box_size, centers=None, sizes=None):
     periodic in `box_size`. Returns an array aligned with GALCATALOG order.
 
     radius, box_size : same (little-h, comoving) length units as the positions.
+                       `radius` may be a sequence: the file is read once and an
+                       (N, len(radius)) array is returned instead of (N,).
     centers          : optional (N, 3) centres; default = each subhalo's COM.
     sizes            : optional (s_pm, s_gas) record strides; auto-detected if None.
     """
     if sizes is None:
         sizes = _detect_galfind_sizes(filename)
+    scalar = np.ndim(radius) == 0
+    r2 = np.atleast_1d(np.asarray(radius, dtype=np.float64)) ** 2
     out = []
     for i, (com, pos, mass) in enumerate(read_galfind_star_particles(filename, sizes)):
         if len(mass) == 0:
-            out.append(0.0)
+            out.append(np.zeros(len(r2)))
             continue
         c = com if centers is None else centers[i]
         dx = pos - c
         dx -= box_size * np.round(dx / box_size)        # periodic minimum image
-        inside = (dx * dx).sum(axis=1) < radius * radius
-        out.append(float(mass[inside].sum()))
-    return np.asarray(out, dtype=np.float64)
+        d2 = (dx * dx).sum(axis=1)
+        out.append([float(mass[d2 < r].sum()) for r in r2])
+    out = np.asarray(out, dtype=np.float64).reshape(-1, len(r2))
+    return out[:, 0] if scalar else out
 
 
 def read_fof_catalog(filename):

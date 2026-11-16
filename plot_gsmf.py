@@ -5,6 +5,8 @@ GSMF = galaxies per comoving volume per dex of stellar mass. Plotted in
 sim-native units: M* in Msun/h, phi in (Mpc/h)^-3 dex^-1. M* defaults to a 3D
 50 proper-kpc aperture (COLIBRE/obs convention, from GALFIND.DATA); use
 --aperture-kpc to change it, or --aperture-kpc 0 for the total bound M*.
+Several values (e.g. --aperture-kpc 0 30 50 100) are overplotted; GALFIND.DATA
+is read only once for all of them.
 
 Calibration (choose with --calib):
   baldry2012   : Baldry+2012 GAMA double-Schechter, z~0
@@ -87,39 +89,59 @@ def davidzon2017(logM_msun, redshift):
     return None, None
 
 
-def compute_gsmf(root, snapshot, mass_lo=7.0, mass_hi=12.0, dlog=0.25, min_count=1,
-                 aperture_kpc=None):
-    """Sim GSMF (all galaxies with mstar>0). Returns
-    (logM_centers[Msun/h], logPhi[(Mpc/h)^-3 dex^-1], err_dex, header).
-
-    aperture_kpc>0 uses M* within that 3D proper-kpc aperture (from GALFIND.DATA,
-    COLIBRE/obs convention); otherwise the catalogue's total bound M* is used."""
+def load_stellar_masses(root, snapshot, apertures_kpc):
+    """Per-subhalo M* [Msun/h] for each entry of `apertures_kpc`. An entry >0
+    is a 3D proper-kpc aperture (from GALFIND.DATA, COLIBRE/obs convention);
+    <=0 or None means the catalogue's total bound M*. GALFIND.DATA is read
+    once for all apertures. Returns (list of arrays, header)."""
     step = f"{snapshot:05d}"
     fof_dir = Path(root) / "FoF_Data" / f"FoF.{step}"
     header, _ = read_fof_catalog(fof_dir / f"FoF_halo_cat.{step}")
     _, subs, _ = read_galaxy_catalog(fof_dir / f"GALCATALOG.LIST.{step}")
 
-    if aperture_kpc and aperture_kpc > 0:
+    ap_kpc = [a for a in apertures_kpc if a and a > 0]
+    by_ap = {}
+    if ap_kpc:
         h = _h(header["hubble"])
-        radius = (aperture_kpc / 1000.0) / header["anow"] * h   # pkpc -> cMpc/h
+        radii = [(a / 1000.0) / header["anow"] * h for a in ap_kpc]  # pkpc -> cMpc/h
         data_file = fof_dir / f"GALFIND.DATA.{step}"
         if not data_file.exists():
             raise SystemExit(f"--aperture-kpc set but {data_file} is missing")
-        mstar_all = aperture_stellar_mass(data_file, radius, header["box_size"])
-        if len(mstar_all) != len(subs):
-            raise SystemExit(f"GALFIND.DATA subhalos ({len(mstar_all)}) != "
+        mstar_ap = aperture_stellar_mass(data_file, radii, header["box_size"])
+        if len(mstar_ap) != len(subs):
+            raise SystemExit(f"GALFIND.DATA subhalos ({len(mstar_ap)}) != "
                              f"GALCATALOG ({len(subs)})")
-        mstar = mstar_all[mstar_all > 0]              # Msun/h
-    else:
-        mstar = subs["mstar"][subs["mstar"] > 0]      # Msun/h
-    volume = header["box_size"] ** 3                  # (Mpc/h)^3
+        by_ap = {a: mstar_ap[:, j] for j, a in enumerate(ap_kpc)}
+    masses = [by_ap[a] if (a and a > 0) else subs["mstar"] for a in apertures_kpc]
+    return masses, header
+
+
+def gsmf_from_masses(mstar, box_size, mass_lo=7.0, mass_hi=12.0, dlog=0.25,
+                     min_count=1):
+    """GSMF of galaxies with mstar>0. Returns
+    (logM_centers[Msun/h], logPhi[(Mpc/h)^-3 dex^-1], err_dex)."""
+    mstar = mstar[mstar > 0]                          # Msun/h
+    volume = box_size ** 3                            # (Mpc/h)^3
     edges = np.arange(mass_lo, mass_hi + 1e-9, dlog)
     counts, _ = np.histogram(np.log10(mstar), bins=edges)
     centers = 0.5 * (edges[:-1] + edges[1:])
     good = counts >= min_count
     phi = counts / (volume * dlog)                    # (Mpc/h)^-3 dex^-1
     err_dex = 0.434 / np.sqrt(np.where(counts > 0, counts, np.nan))
-    return centers[good], np.log10(phi[good]), err_dex[good], header
+    return centers[good], np.log10(phi[good]), err_dex[good]
+
+
+def compute_gsmf(root, snapshot, mass_lo=7.0, mass_hi=12.0, dlog=0.25, min_count=1,
+                 aperture_kpc=None):
+    """Sim GSMF for one aperture (see load_stellar_masses). Returns
+    (logM_centers[Msun/h], logPhi[(Mpc/h)^-3 dex^-1], err_dex, header)."""
+    (mstar,), header = load_stellar_masses(root, snapshot, [aperture_kpc])
+    return (*gsmf_from_masses(mstar, header["box_size"], mass_lo, mass_hi, dlog,
+                              min_count), header)
+
+
+def _aperture_label(a):
+    return f"{a:g} pkpc" if a and a > 0 else "total $M_\\star$"
 
 
 def overlay_calib(ax, xrange, h, z, which):
@@ -168,29 +190,45 @@ def main():
                    default="davidzon2017")
     p.add_argument("--obs-file", type=Path, default=None,
                    help="logM[Msun] logPhi[Mpc^-3/dex] [err_dex]")
-    p.add_argument("--aperture-kpc", type=float, default=50.0,
-                   help="3D stellar aperture [proper kpc] from GALFIND.DATA "
-                        "(COLIBRE/obs use 50); pass <=0 for total bound M*")
+    p.add_argument("--aperture-kpc", type=float, nargs="+", default=[50.0],
+                   help="3D stellar aperture(s) [proper kpc] from GALFIND.DATA "
+                        "(COLIBRE/obs use 50); several values are overplotted, "
+                        "e.g. --aperture-kpc 0 30 50 100; <=0 means total bound M*")
     p.add_argument("--output", type=Path, default=None)
     args = p.parse_args()
 
-    centers, logphi, err, header = compute_gsmf(
-        args.root, args.snapshot, dlog=args.dlog, aperture_kpc=args.aperture_kpc)
-    if len(centers) == 0:
-        raise SystemExit("No galaxies with mstar>0 found")
+    masses, header = load_stellar_masses(args.root, args.snapshot, args.aperture_kpc)
     z = header["redshift"]; h = _h(header["hubble"])
+    multi = len(args.aperture_kpc) > 1
 
     fig, ax = plt.subplots(figsize=(7, 5.5))
-    ax.errorbar(centers, logphi, yerr=err, fmt="o", color="C0", ms=5,
-                capsize=2, label=f"PGalF {Path(args.root).name}")
-    overlay_calib(ax, (centers.min(), centers.max()), h, z, args.calib)
+    xmin, xmax = np.inf, -np.inf
+    for k, (a, mstar) in enumerate(zip(args.aperture_kpc, masses)):
+        centers, logphi, err = gsmf_from_masses(mstar, header["box_size"],
+                                                dlog=args.dlog)
+        if len(centers) == 0:
+            print(f"aperture {_aperture_label(a)}: no galaxies with mstar>0")
+            continue
+        xmin, xmax = min(xmin, centers.min()), max(xmax, centers.max())
+        label = f"PGalF {Path(args.root).name}"
+        if multi:
+            label = f"{_aperture_label(a)}"
+        ax.errorbar(centers, logphi, yerr=err, fmt="o-" if multi else "o",
+                    color=f"C{k}", ms=4 if multi else 5, lw=1.2, capsize=2,
+                    label=label)
+    if not np.isfinite(xmin):
+        raise SystemExit("No galaxies with mstar>0 found")
+    overlay_calib(ax, (xmin, xmax), h, z, args.calib)
     if args.obs_file:
         overlay_obs_file(ax, args.obs_file, h)
 
     ax.set_xlabel(r"$\log_{10}(M_\star/[M_\odot/h])$")
     ax.set_ylabel(r"$\log_{10}(\phi/[(h/{\rm Mpc})^3\,{\rm dex}^{-1}])$")
-    ap = (f"{args.aperture_kpc:g} pkpc aperture"
-          if args.aperture_kpc and args.aperture_kpc > 0 else "total $M_\\star$")
+    if multi:
+        ap = f"PGalF {Path(args.root).name}"
+    else:
+        a = args.aperture_kpc[0]
+        ap = f"{a:g} pkpc aperture" if a and a > 0 else "total $M_\\star$"
     ax.set_title(f"GSMF  snapshot {args.snapshot:04d}, z={z:.3g}  ({ap})")
     ax.grid(True, alpha=0.25)
     ax.legend(frameon=False, fontsize=9, loc="lower left")

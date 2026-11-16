@@ -4,6 +4,9 @@
 By default, one point is plotted per PGALF host: the most massive stellar
 subhalo is used as the central galaxy.  Use --population subhalo to plot all
 stellar-mass subhalos instead.
+
+Several --aperture-kpc values (e.g. 0 30 50 100) are overplotted, each as a
+light scatter plus its binned median; GALFIND.DATA is read only once.
 """
 
 from pathlib import Path
@@ -15,55 +18,63 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 
-from read_pgalf_catalog import (read_fof_catalog, read_galaxy_catalog,
-                                 aperture_stellar_mass)
+from read_pgalf_catalog import read_galaxy_catalog
+from plot_gsmf import load_stellar_masses
+
+
+def _select(hosts, host_ids, mstar_all, population):
+    """Pair subhalo M* with its host's total mass. Keeps mstar>0 subhalos of
+    hosts with totm>0; 'central' keeps only the most massive one per host."""
+    host_m = hosts["totm"][host_ids]
+    keep = (mstar_all > 0) & (host_m > 0)
+    if population == "central":
+        idx = np.flatnonzero(keep)
+        # host_ids is non-decreasing (GALCATALOG order): sort by (host, -M*)
+        order = idx[np.lexsort((-mstar_all[idx], host_ids[idx]))]
+        first = np.ones(len(order), dtype=bool)
+        first[1:] = host_ids[order][1:] != host_ids[order][:-1]
+        sel = order[first]
+    else:
+        sel = np.flatnonzero(keep)
+    return host_m[sel], mstar_all[sel]
+
+
+def load_relations(root, snapshot, population, apertures_kpc):
+    """Return (header, [(halo_mass, stellar_mass), ...]) in Msun/h, one pair
+    per entry of apertures_kpc.
+
+    Halo mass is the host total mass (no aperture). Stellar mass uses a 3D
+    proper-kpc aperture (from GALFIND.DATA) when the entry is >0, else the
+    catalogue's total bound M*."""
+    step = f"{snapshot:05d}"
+    galaxy_file = Path(root) / "FoF_Data" / f"FoF.{step}" / f"GALCATALOG.LIST.{step}"
+    hosts, _, host_ids = read_galaxy_catalog(galaxy_file)
+    masses, header = load_stellar_masses(root, snapshot, apertures_kpc)
+    return header, [_select(hosts, host_ids, m, population) for m in masses]
 
 
 def load_relation(root, snapshot, population, aperture_kpc=None):
-    """Return host-halo and stellar masses in Msun/h.
+    """Single-aperture load_relations: (header, halo_mass, stellar_mass)."""
+    header, [(halo_mass, stellar_mass)] = load_relations(
+        root, snapshot, population, [aperture_kpc])
+    return header, halo_mass, stellar_mass
 
-    Halo mass is the host total mass (no aperture). Stellar mass uses a 3D
-    proper-kpc aperture (from GALFIND.DATA) when aperture_kpc>0, else the
-    catalogue's total bound M*."""
-    step = f"{snapshot:05d}"
-    fof_dir = Path(root) / "FoF_Data" / f"FoF.{step}"
-    fof_file = fof_dir / f"FoF_halo_cat.{step}"
-    galaxy_file = fof_dir / f"GALCATALOG.LIST.{step}"
 
-    header, _ = read_fof_catalog(fof_file)
-    hosts, subhalos, host_ids = read_galaxy_catalog(galaxy_file)
+def binned_median(log_x, log_y, dlog=0.2, min_count=5):
+    """Median of log_y in log_x bins with >= min_count objects."""
+    edges = np.arange(np.floor(log_x.min() / dlog) * dlog, log_x.max() + dlog, dlog)
+    idx = np.digitize(log_x, edges) - 1
+    xc, ym = [], []
+    for i in range(len(edges) - 1):
+        sel = idx == i
+        if sel.sum() >= min_count:
+            xc.append(0.5 * (edges[i] + edges[i + 1]))
+            ym.append(np.median(log_y[sel]))
+    return np.asarray(xc), np.asarray(ym)
 
-    if aperture_kpc and aperture_kpc > 0:
-        h = header["hubble"]
-        h = h / 100.0 if h > 1.0 else h
-        radius = (aperture_kpc / 1000.0) / header["anow"] * h   # pkpc -> cMpc/h
-        data_file = fof_dir / f"GALFIND.DATA.{step}"
-        if not data_file.exists():
-            raise SystemExit(f"--aperture-kpc set but {data_file} is missing")
-        mstar_all = aperture_stellar_mass(data_file, radius, header["box_size"])
-        if len(mstar_all) != len(subhalos):
-            raise SystemExit(f"GALFIND.DATA subhalos ({len(mstar_all)}) != "
-                             f"GALCATALOG ({len(subhalos)})")
-    else:
-        mstar_all = subhalos["mstar"]
 
-    halo_masses = []
-    stellar_masses = []
-    for host_id, host in enumerate(hosts):
-        sel = host_ids == host_id
-        m_mstar = mstar_all[sel]
-        keep = m_mstar > 0
-        m_mstar = m_mstar[keep]
-        if len(m_mstar) == 0 or host["totm"] <= 0:
-            continue
-
-        if population == "central":
-            m_mstar = m_mstar[[int(np.argmax(m_mstar))]]
-
-        halo_masses.extend([host["totm"]] * len(m_mstar))
-        stellar_masses.extend(m_mstar)
-
-    return header, np.asarray(halo_masses), np.asarray(stellar_masses)
+def _aperture_label(a):
+    return f"{a:g} pkpc" if a and a > 0 else "total $M_\\star$"
 
 
 def moster13(log_mhalo, redshift=0.0):
@@ -167,17 +178,24 @@ def main():
     parser.add_argument(
         "--aperture-kpc",
         type=float,
-        default=50.0,
-        help="3D stellar aperture [proper kpc] from GALFIND.DATA (COLIBRE/obs "
-             "use 50); pass <=0 for total bound M*. Halo mass is unaffected.",
+        nargs="+",
+        default=[50.0],
+        help="3D stellar aperture(s) [proper kpc] from GALFIND.DATA (COLIBRE/obs "
+             "use 50); several values are overplotted with binned medians, "
+             "e.g. --aperture-kpc 0 30 50 100; <=0 means total bound M*. "
+             "Halo mass is unaffected.",
     )
+    parser.add_argument("--dlog", type=float, default=0.2,
+                        help="halo-mass bin width [dex] for the medians "
+                             "(multi-aperture only)")
     args = parser.parse_args()
 
-    header, halo_mass, stellar_mass = load_relation(
-        args.root, args.snapshot, args.population, aperture_kpc=args.aperture_kpc
+    header, relations = load_relations(
+        args.root, args.snapshot, args.population, args.aperture_kpc
     )
-    if len(halo_mass) == 0:
+    if all(len(hm) == 0 for hm, _ in relations):
         raise SystemExit("No positive-stellar-mass PGALF galaxies found")
+    multi = len(args.aperture_kpc) > 1
 
     output = args.output or Path(
         f"mstar_mhalo_{args.population}_{args.snapshot:05d}.png"
@@ -186,21 +204,26 @@ def main():
 
     redshift = header["redshift"]
     fig, ax = plt.subplots(figsize=(7, 5.5))
-    ax.scatter(
-        np.log10(halo_mass),
-        np.log10(stellar_mass),
-        s=10,
-        alpha=0.55,
-        linewidths=0,
-    )
+    for k, (a, (halo_mass, stellar_mass)) in enumerate(
+            zip(args.aperture_kpc, relations)):
+        if len(halo_mass) == 0:
+            print(f"aperture {_aperture_label(a)}: no positive-stellar-mass galaxies")
+            continue
+        lx, ly = np.log10(halo_mass), np.log10(stellar_mass)
+        if not multi:
+            ax.scatter(lx, ly, s=10, alpha=0.55, linewidths=0)
+            continue
+        ax.scatter(lx, ly, s=4, alpha=0.2, linewidths=0, color=f"C{k}")
+        xc, ym = binned_median(lx, ly, args.dlog)
+        ax.plot(xc, ym, "o-", color=f"C{k}", ms=4, lw=2, zorder=4,
+                label=f"{_aperture_label(a)} (median)")
     # Some PGALF headers store H0 in km/s/Mpc rather than the dimensionless h.
     hubble = header["hubble"]
     if hubble > 1.0:
         hubble /= 100.0
 
-    log_mhalo_grid = np.linspace(
-        np.log10(halo_mass).min(), np.log10(halo_mass).max(), 200
-    )
+    all_lx = np.log10(np.concatenate([hm for hm, _ in relations]))
+    log_mhalo_grid = np.linspace(all_lx.min(), all_lx.max(), 200)
     ax.plot(
         log_mhalo_grid,
         moster13(log_mhalo_grid - np.log10(hubble), redshift) + np.log10(hubble),
@@ -232,11 +255,14 @@ def main():
 
     ax.set_xlabel(r"$\log_{10}(M_{\rm halo}/[M_\odot/h])$")
     ax.set_ylabel(r"$\log_{10}(M_\star/[M_\odot/h])$")
-    ap = (f"{args.aperture_kpc:g} pkpc aperture"
-          if args.aperture_kpc and args.aperture_kpc > 0 else "total $M_\\star$")
+    if multi:
+        ap = "multi-aperture"
+    else:
+        a = args.aperture_kpc[0]
+        ap = f"{a:g} pkpc aperture" if a and a > 0 else "total $M_\\star$"
     ax.set_title(
         f"PGALF stellar-to-halo mass relation "
-        f"snapshot {args.snapshot:04d}, z={redshift:.3g} ({args.population}, {ap})"
+        f"snapshot {args.snapshot:04d}, z={redshift:.3g}\n({args.population}, {ap})"
     )
     ax.grid(True, alpha=0.25)
     fig.tight_layout()
@@ -244,7 +270,9 @@ def main():
     plt.close(fig)
 
     print(f"snapshot={args.snapshot:04d} z={redshift:.6g}")
-    print(f"population={args.population} points={len(halo_mass)}")
+    for a, (halo_mass, _) in zip(args.aperture_kpc, relations):
+        print(f"population={args.population} aperture={_aperture_label(a)} "
+              f"points={len(halo_mass)}")
     print(f"output={output.resolve()}")
 
 
