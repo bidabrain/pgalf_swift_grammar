@@ -98,75 +98,139 @@ GALCENTER_DTYPE = np.dtype(
 )
 
 
-# GALFIND.DATA per-particle layout. Halo and subhalo headers are both
-# 6*int32 + 11*float64 = 112 bytes. Particle record sizes (bytes):
-_GALFIND_HDR_BYTES = 6 * 4 + 11 * 8        # 112
-_GALFIND_DM_BYTES = 96                      # == star record size
-_GALFIND_GAS_BYTES = 104
-_GALFIND_SINK_BYTES = 168
-
-# One star particle, matching read_PGalF_v1.py's STAR record.
-STAR_RECORD_DTYPE = np.dtype(
-    [
-        ("pos", "<f8", (3,)),
-        ("vel", "<f8", (3,)),
-        ("mass", "<f8"),
-        ("mass0", "<f8"),
-        ("tp", "<f8"),
-        ("zp", "<f8"),
-        ("id", "<i4"),
-        ("family", "i1"),
-        ("tag", "i1"),
-        ("_pad", "<i2"),
-        ("level", "<i4"),
-        ("_dum", "<i4"),
-    ]
-)
-assert STAR_RECORD_DTYPE.itemsize == _GALFIND_DM_BYTES
+# GALFIND.DATA layout. Halo and subhalo headers are both 112 bytes
+# (6*int32 + 11*float64). Each subhalo is followed by its DM, gas, sink then
+# star particle records (gfind.c writes sizeof(DmType)/GasType/SinkType/StarType
+# blocks in that order). Those struct sizes depend on the gfind build flags
+# (NCHEM, NDUST, ...), so the DM/star stride (DmType==StarType==PmType) and the
+# gas stride are AUTO-DETECTED from the file size + GALCATALOG.LIST counts and
+# validated against the catalogue's mstar -- never hard-coded. SinkType has no
+# conditional fields (fixed 168 bytes). In every build the first PmType fields
+# are x,y,z,vx,vy,vz,mass, so a star's position is at byte 0 and its mass at
+# byte 48 of its record regardless of flags.
+_GALFIND_HDR_BYTES = 112
+_SINK_BYTES = 168
+_PM_POS_OFFSET = 0
+_PM_MASS_OFFSET = 48
+_COUNT_CAP = 200_000_000        # reject absurd counts from a misaligned read
 
 
-def read_galfind_star_particles(filename):
-    """Iterate GALFIND.DATA, yielding (com_xyz, star_pos, star_mass) per subhalo
-    in the SAME order as GALCATALOG.LIST. DM/gas/sink blocks are skipped.
+def _galcatalog_for(data_file):
+    p = Path(data_file)
+    return p.with_name(p.name.replace("GALFIND.DATA", "GALCATALOG.LIST"))
 
-    com_xyz : the subhalo centre-of-mass stored in its header (code units)
-    star_pos: (N, 3) star positions, star_mass: (N,) star masses
-    Positions and masses are in the catalogue's little-h code units.
-    """
-    path = Path(filename)
-    size = path.stat().st_size
-    with open(path, "rb") as f:
+
+def _iter_galfind(filename, s_pm, s_gas, limit=None):
+    """Yield (com, star_pos[N,3], star_mass[N]) per subhalo given the DM/star
+    stride `s_pm` and gas stride `s_gas`. Stops after `limit` subhalos if set.
+    Raises ValueError on misalignment (absurd counts / truncation)."""
+    size = Path(filename).stat().st_size
+    seen = 0
+    with open(filename, "rb") as f:
         while f.tell() < size:
             halo_hdr = f.read(_GALFIND_HDR_BYTES)
             if len(halo_hdr) < _GALFIND_HDR_BYTES:
                 break
             nsub = int(np.frombuffer(halo_hdr, dtype="<i4", count=1)[0])
+            if not (0 <= nsub <= _COUNT_CAP):
+                raise ValueError("misaligned halo header")
             for _ in range(nsub):
                 hdr = f.read(_GALFIND_HDR_BYTES)
                 if len(hdr) < _GALFIND_HDR_BYTES:
                     raise ValueError(f"Truncated subhalo header: {filename}")
-                counts = np.frombuffer(hdr, dtype="<i4", count=6)
-                ndm, ngas, nsink, nst = (int(counts[0]), int(counts[1]),
-                                         int(counts[2]), int(counts[3]))
-                com = np.frombuffer(hdr[24:24 + 88], dtype="<f8", count=11)[5:8].copy()
-                f.seek(ndm * _GALFIND_DM_BYTES
-                       + ngas * _GALFIND_GAS_BYTES
-                       + nsink * _GALFIND_SINK_BYTES, 1)
-                stars = np.fromfile(f, dtype=STAR_RECORD_DTYPE, count=nst)
-                if len(stars) != nst:
+                c = np.frombuffer(hdr, dtype="<i4", count=6)
+                ndm, ngas, nsink, nst = int(c[0]), int(c[1]), int(c[2]), int(c[3])
+                if min(ndm, ngas, nsink, nst) < 0 or max(ndm, ngas, nsink, nst) > _COUNT_CAP:
+                    raise ValueError("misaligned subhalo header")
+                com = np.frombuffer(hdr[24:112], dtype="<f8", count=11)[5:8].copy()
+                f.seek(ndm * s_pm + ngas * s_gas + nsink * _SINK_BYTES, 1)
+                block = f.read(nst * s_pm)
+                if len(block) < nst * s_pm:
                     raise ValueError(f"Truncated star block: {filename}")
-                yield com, stars["pos"], stars["mass"]
+                if nst:
+                    rec = np.frombuffer(block, dtype=np.uint8).reshape(nst, s_pm)
+                    pos = rec[:, _PM_POS_OFFSET:_PM_POS_OFFSET + 24].copy().view("<f8").reshape(nst, 3)
+                    mass = rec[:, _PM_MASS_OFFSET:_PM_MASS_OFFSET + 8].copy().view("<f8").reshape(nst)
+                else:
+                    pos = np.empty((0, 3), dtype="<f8")
+                    mass = np.empty(0, dtype="<f8")
+                yield com, pos, mass
+                seen += 1
+                if limit is not None and seen >= limit:
+                    return
 
 
-def aperture_stellar_mass(filename, radius, box_size, centers=None):
+def _detect_galfind_sizes(filename):
+    """Return (s_pm, s_gas) for GALFIND.DATA by matching the file size to the
+    GALCATALOG.LIST particle counts and validating star-mass sums vs mstar."""
+    cat = _galcatalog_for(filename)
+    if not cat.exists():
+        raise ValueError(f"need {cat} alongside {filename} to size its records")
+    hosts, galaxies, _ = read_galaxy_catalog(cat)
+    n_halos, n_subs = len(hosts), len(galaxies)
+    sum_dm = int(galaxies["npdm"].sum())
+    sum_gas = int(galaxies["npgas"].sum())
+    sum_sink = int(galaxies["npsink"].sum())
+    sum_star = int(galaxies["npstar"].sum())
+
+    size = Path(filename).stat().st_size
+    base = (n_halos + n_subs) * _GALFIND_HDR_BYTES + sum_sink * _SINK_BYTES
+
+    star_idx = [i for i in range(n_subs) if galaxies["npstar"][i] > 0]
+    target = {i: float(galaxies["mstar"][i]) for i in star_idx[:30]}
+    n_val = (max(target) + 1) if target else 0
+
+    for s_pm in range(96, 520, 8):
+        rem = size - base - s_pm * (sum_dm + sum_star)
+        if sum_gas > 0:
+            if rem <= 0 or rem % sum_gas != 0:
+                continue
+            s_gas = rem // sum_gas
+            if not (96 <= s_gas <= 520):
+                continue
+        else:
+            if rem != 0:
+                continue
+            s_gas = 104
+        if _validate_sizes(filename, s_pm, s_gas, target, n_val):
+            return int(s_pm), int(s_gas)
+    raise ValueError(f"could not determine GALFIND.DATA record sizes for {filename}")
+
+
+def _validate_sizes(filename, s_pm, s_gas, target, n_val, rtol=1e-3):
+    if not target:
+        return True
+    try:
+        for i, (_com, _pos, mass) in enumerate(
+                _iter_galfind(filename, s_pm, s_gas, limit=n_val)):
+            want = target.get(i)
+            if want and want > 0 and abs(float(mass.sum()) - want) > rtol * want:
+                return False
+    except (ValueError, MemoryError, OverflowError):
+        return False
+    return True
+
+
+def read_galfind_star_particles(filename, sizes=None):
+    """Iterate (com_xyz, star_pos, star_mass) per subhalo, in GALCATALOG.LIST
+    order. Record strides are auto-detected (sizes=(s_pm, s_gas) overrides).
+    Positions and masses are in the catalogue's little-h code units."""
+    s_pm, s_gas = sizes if sizes else _detect_galfind_sizes(filename)
+    yield from _iter_galfind(filename, s_pm, s_gas)
+
+
+def aperture_stellar_mass(filename, radius, box_size, centers=None, sizes=None):
     """Stellar mass within `radius` (code units) of each subhalo centre,
     periodic in `box_size`. Returns an array aligned with GALCATALOG order.
 
     radius, box_size : same (little-h, comoving) length units as the positions.
     centers          : optional (N, 3) centres; default = each subhalo's COM.
+    sizes            : optional (s_pm, s_gas) record strides; auto-detected if None.
     """
+    if sizes is None:
+        sizes = _detect_galfind_sizes(filename)
     out = []
-    for i, (com, pos, mass) in enumerate(read_galfind_star_particles(filename)):
+    for i, (com, pos, mass) in enumerate(read_galfind_star_particles(filename, sizes)):
         if len(mass) == 0:
             out.append(0.0)
             continue
