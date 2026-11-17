@@ -143,6 +143,12 @@ via `-s $SLURM_ARRAY_TASK_ID`).
 Run from the repo root (they import `read_pgalf_catalog.py`). `--root` is the
 `run_pgalf.sh` `<out_dir>`.
 
+> Alternative finder: [HBT-HERONS-GRAMMAR](https://github.com/bidabrain/HBT-HERONS-GRAMMAR)
+> (`grammar/run_hbt.sh`, `grammar/plot_gsmf_hbt.py`, ...) produces the same
+> plots in the same units from HBT-HERONS catalogues, reusing the reference
+> curves and binning from the scripts below; keep this repo next to it or set
+> `PGALF_REPO`.
+
 ```bash
 # Galaxy stellar mass function vs. a Schechter calibration
 python plot_gsmf.py --root <out_dir> --snapshot 274 --dlog 0.2 \
