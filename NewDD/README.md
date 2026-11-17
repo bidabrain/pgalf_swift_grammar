@@ -13,6 +13,7 @@ A tool for reading RAMSES simulation snapshot data and decomposing the domain in
 | [PIPELINE.md](PIPELINE.md) | PGalF pipeline integration guide |
 | [README4GADGET.md](README4GADGET.md) | GADGET HDF5 adaptation guide |
 | [SWIFT_GADGET.md](SWIFT_GADGET.md) | Implemented SWIFT/GADGET HDF5 usage guide |
+| [NOTE_SWIFT_h_units.md](NOTE_SWIFT_h_units.md) | SWIFT has no h in its units: how NewDD gets h, and the pre-fix h=1 bug |
 
 ---
 

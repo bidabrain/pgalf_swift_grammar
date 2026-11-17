@@ -80,6 +80,15 @@ A GCC-incompatible `aa = (void*)star = malloc(...)` (cast-as-lvalue) in
 > Cosmology is **compile-time** (`#define REQUIRED_OMEGA_M ...`). All three C
 > programs override the header with these — change in **all three** and rebuild.
 
+> **SWIFT and little h:** SWIFT snapshots store lengths/masses *without* h and
+> keep h in `/Cosmology/h` (no `/Header/HubbleParam`). NewDD converts to
+> cMpc/h and Msun/h using that h; before the fix in
+> [`NewDD/NOTE_SWIFT_h_units.md`](NewDD/NOTE_SWIFT_h_units.md) it fell back to
+> h=1 on SWIFT input, so older outputs are really in cMpc / Msun (e.g. FoF
+> `box_size` = 25 instead of 17.33). The `REQUIRED_H0` override above does
+> **not** affect this conversion. Check the NewDD log for
+> `rd_gadget_info: h=... -> boxlen=... cMpc/h`.
+
 ### 5. Running the pipeline (`run_pgalf.sh`)
 
 SWIFT snapshots (e.g. `flamingo_0042.hdf5`) are symlinked to the name NewDD
@@ -280,6 +289,10 @@ Each subdirectory contains detailed documentation:
 | Position | comoving Mpc/h |
 | Velocity | km/s |
 | Mass | Msun/h |
+
+These hold for SWIFT input only when NewDD found h (`/Cosmology/h`); outputs
+made before that fix are in comoving Mpc and Msun. See
+[`NewDD/NOTE_SWIFT_h_units.md`](NewDD/NOTE_SWIFT_h_units.md).
 
 ## License
 

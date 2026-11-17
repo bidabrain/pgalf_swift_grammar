@@ -11,6 +11,15 @@ This document describes how to run `NewDD` on SWIFT/GADGET-style HDF5 snapshots 
   - black holes/sinks (`PartType5`)
 - Runtime support in `newdd.c` for GADGET/SWIFT snapshot loops
 
+## Units and little h
+
+SWIFT stores lengths and masses without h and keeps h in `/Cosmology/h`
+(there is no `/Header/HubbleParam`). `rd_gadget_info()` reads h from
+`/Header/HubbleParam`, then `/Cosmology/h`, and converts positions/box to
+cMpc/h and masses to Msun/h; if neither exists it warns and uses h=1. Earlier
+versions skipped the `/Cosmology` fallback, so SWIFT outputs made with them are
+in cMpc / Msun. Details and consequences: [NOTE_SWIFT_h_units.md](NOTE_SWIFT_h_units.md).
+
 ## Build
 
 From `GalaxyFinder/NewDD`:

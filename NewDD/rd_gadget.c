@@ -305,9 +305,9 @@ int rd_gadget_info(RamsesType *ram, char *basename, int ifile){
 		header.boxsize = tmp_box[0];
 	}
 	read_attr_int(header_id, "NumFilesPerSnapshot", &header.nfiles);
-	read_attr_double(header_id, "Omega0", &header.omega0);
-	read_attr_double(header_id, "OmegaLambda", &header.omegalambda);
-	read_attr_double(header_id, "HubbleParam", &header.hubble);
+	int have_om = (read_attr_double(header_id, "Omega0", &header.omega0) == 0);
+	int have_ol = (read_attr_double(header_id, "OmegaLambda", &header.omegalambda) == 0);
+	int have_h  = (read_attr_double(header_id, "HubbleParam", &header.hubble) == 0);
 	read_attr_int(header_id, "Flag_Sfr", &header.flag_sfr);
 	read_attr_int(header_id, "Flag_Cooling", &header.flag_cooling);
 	read_attr_int(header_id, "Flag_StellarAge", &header.flag_stellarage);
@@ -318,6 +318,23 @@ int rd_gadget_info(RamsesType *ram, char *basename, int ifile){
 	read_attr_double(header_id, "UnitVelocity_in_cm_per_s", &header.unit_velocity);
 
 	H5Gclose(header_id);
+
+	/* SWIFT has no Header/HubbleParam, Omega0, OmegaLambda: they live in the
+	   Cosmology group. Without h, boxlen_ini, positions and masses would come
+	   out in Mpc / Msun instead of cMpc/h / Msun/h. */
+	if((!have_h || !have_om || !have_ol) && H5Lexists(file_id, "Cosmology", H5P_DEFAULT) > 0){
+		hid_t cosmo_id = H5Gopen2(file_id, "Cosmology", H5P_DEFAULT);
+		if(cosmo_id >= 0){
+			if(!have_h)  have_h  = (read_attr_double(cosmo_id, "h", &header.hubble) == 0);
+			if(!have_om) have_om = (read_attr_double(cosmo_id, "Omega_m", &header.omega0) == 0);
+			if(!have_ol) have_ol = (read_attr_double(cosmo_id, "Omega_lambda", &header.omegalambda) == 0);
+			H5Gclose(cosmo_id);
+		}
+	}
+	if(!have_h){
+		ERRORPRINT("No HubbleParam or Cosmology/h in '%s': assuming h=1, so lengths "
+				"and masses will NOT be in h units\n", filename);
+	}
 
 	/* SWIFT: read physical unit system from InternalCodeUnits group */
 	header.is_swift = 0;
@@ -358,6 +375,11 @@ int rd_gadget_info(RamsesType *ram, char *basename, int ifile){
 		(header.unit_length * header.unit_length * header.unit_length);
 	ram->boxlen_ini = header.boxsize * header.unit_length / Mpc * header.hubble;
 	ram->boxlen = ram->boxlen_ini;
+	if(ifile == 0){
+		printf("rd_gadget_info: h=%g Omega_m=%g Omega_lambda=%g BoxSize=%g -> boxlen=%g cMpc/h\n",
+				header.hubble, header.omega0, header.omegalambda, header.boxsize,
+				ram->boxlen_ini);
+	}
 	ram->smallr = 1.e-30;
 
 	gadget_units(ram, &header);
