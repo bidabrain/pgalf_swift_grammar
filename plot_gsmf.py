@@ -34,7 +34,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from read_pgalf_catalog import (read_fof_catalog, read_galaxy_catalog,
-                                 aperture_stellar_mass)
+                                 aperture_stellar_mass, galcenter_positions)
 
 
 # Davidzon+2017 COSMOS2015, TOTAL sample (Table 1, h=0.7).
@@ -89,12 +89,36 @@ def davidzon2017(logM_msun, redshift):
     return None, None
 
 
-def load_stellar_masses(root, snapshot, apertures_kpc, min_npstar=0):
+def aperture_centers(fof_dir, step, center, n_subs):
+    """Aperture centres for `center`: None for 'com' (each subhalo's
+    centre of mass from GALFIND.DATA), else the GalCenter stellar centres
+    aligned to GALCATALOG order (NaN rows fall back to the COM)."""
+    if center == "com":
+        return None
+    if center != "galcenter":
+        raise ValueError(center)
+    center_file = fof_dir / f"GALFIND.CENTER.{step}"
+    if not center_file.exists():
+        raise SystemExit(f"--center galcenter but {center_file} is missing "
+                         "(run the galcenter stage)")
+    cen = galcenter_positions(center_file, fof_dir / f"GALCATALOG.LIST.{step}")
+    if len(cen) != n_subs:
+        raise SystemExit(f"GALFIND.CENTER aligned to {len(cen)} subhalos != "
+                         f"GALCATALOG ({n_subs})")
+    nmiss = int((~np.isfinite(cen).all(axis=1)).sum())
+    print(f"--center galcenter: {n_subs - nmiss}/{n_subs} subhalos use the GalCenter "
+          f"stellar centre; {nmiss} (no entry / no stars) fall back to the COM")
+    return cen
+
+
+def load_stellar_masses(root, snapshot, apertures_kpc, min_npstar=0, center="com"):
     """Per-subhalo M* [Msun/h] for each entry of `apertures_kpc`. An entry >0
     is a 3D proper-kpc aperture (from GALFIND.DATA, COLIBRE/obs convention);
     <=0 or None means the catalogue's total bound M*. GALFIND.DATA is read
     once for all apertures. Subhalos with fewer than `min_npstar` bound star
     particles get M*=0 (i.e. are dropped from the GSMF) in every array.
+    center='com' centres apertures on the subhalo centre of mass (all particle
+    types); 'galcenter' uses the GalCenter stellar centre (GALFIND.CENTER).
     Returns (list of arrays, header)."""
     step = f"{snapshot:05d}"
     fof_dir = Path(root) / "FoF_Data" / f"FoF.{step}"
@@ -109,7 +133,9 @@ def load_stellar_masses(root, snapshot, apertures_kpc, min_npstar=0):
         data_file = fof_dir / f"GALFIND.DATA.{step}"
         if not data_file.exists():
             raise SystemExit(f"--aperture-kpc set but {data_file} is missing")
-        mstar_ap = aperture_stellar_mass(data_file, radii, header["box_size"])
+        centers = aperture_centers(fof_dir, step, center, len(subs))
+        mstar_ap = aperture_stellar_mass(data_file, radii, header["box_size"],
+                                         centers=centers)
         if len(mstar_ap) != len(subs):
             raise SystemExit(f"GALFIND.DATA subhalos ({len(mstar_ap)}) != "
                              f"GALCATALOG ({len(subs)})")
@@ -212,11 +238,16 @@ def main():
     p.add_argument("--min-npstar", type=int, default=0,
                    help="only count galaxies with at least this many bound star "
                         "particles (GALCATALOG npstar); applied to every aperture")
+    p.add_argument("--center", choices=("com", "galcenter"), default="com",
+                   help="aperture centre: 'com' = subhalo centre of mass of all "
+                        "particle types; 'galcenter' = GalCenter stellar centre "
+                        "(GALFIND.CENTER), falling back to the COM where missing")
     p.add_argument("--output", type=Path, default=None)
     args = p.parse_args()
 
     masses, header = load_stellar_masses(args.root, args.snapshot, args.aperture_kpc,
-                                         min_npstar=args.min_npstar)
+                                         min_npstar=args.min_npstar,
+                                         center=args.center)
     if args.min_npstar > 0:
         m_sp = star_particle_mass(args.root, args.snapshot)
         print(f"--min-npstar {args.min_npstar}: star particle mass ~{m_sp:.3g} Msun/h, "
@@ -255,6 +286,8 @@ def main():
         ap = f"{a:g} pkpc aperture" if a and a > 0 else "total $M_\\star$"
     if args.min_npstar > 0:
         ap += f", $N_\\star\\geq{args.min_npstar}$"
+    if args.center != "com" and any(a and a > 0 for a in args.aperture_kpc):
+        ap += f", centre={args.center}"
     ax.set_title(f"GSMF  snapshot {args.snapshot:04d}, z={z:.3g}  ({ap})")
     ax.grid(True, alpha=0.25)
     ax.legend(frameon=False, fontsize=9, loc="lower left")

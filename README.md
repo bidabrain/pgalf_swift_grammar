@@ -149,6 +149,19 @@ python plot_stellar_halo_relation.py --root <out_dir> --snapshot 274 \
   catalogue's total bound M*. Several values are overplotted: GSMF curves
   per aperture; for the SHMR, light scatter plus a binned median per aperture
   (`--dlog`, default 0.2 dex). `GALFIND.DATA` is read once for all apertures.
+- `--center com|galcenter` (both scripts, default `com`): aperture centre.
+  `com` is the subhalo centre of mass over all particle types (GALCATALOG
+  `x,y,z`), which can sit far from the stellar body for single-peak FoF halos
+  (whole FoF kept, no unbinding), mergers or stripped satellites. `galcenter`
+  uses the GalCenter stellar centre from `GALFIND.CENTER` (shrinking sphere on
+  the star particles for >30 stars, star centre of mass for 1–30), matched by
+  `(halo_id, subhalo_id)`; subhalos without an entry or stars fall back to the
+  COM. Needs the galcenter stage. Periodic boxes are fine: opFoF (run with
+  `<snap> <nsplit>` as in `run_pgalf.sh`, i.e. periodic mode) unwraps every
+  FoF halo crossing the box edge before writing its particles, so both
+  centres see contiguous positions (possibly <0). GalCenter's own x-wrap in
+  `find_centers.c` (which has a `MAX(xmin, …)` typo and assumes boxes >700
+  cMpc/h) only matters for non-periodic opFoF runs.
 - `--min-npstar N` (both scripts, default 0 = off): keep only galaxies with
   at least N bound star particles (`npstar` in `GALCATALOG.LIST`), for every
   aperture; in the SHMR the cut is applied before the central is chosen. The

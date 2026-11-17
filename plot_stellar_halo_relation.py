@@ -39,26 +39,30 @@ def _select(hosts, host_ids, mstar_all, population):
     return host_m[sel], mstar_all[sel]
 
 
-def load_relations(root, snapshot, population, apertures_kpc, min_npstar=0):
+def load_relations(root, snapshot, population, apertures_kpc, min_npstar=0,
+                   center="com"):
     """Return (header, [(halo_mass, stellar_mass), ...]) in Msun/h, one pair
     per entry of apertures_kpc.
 
     Halo mass is the host total mass (no aperture). Stellar mass uses a 3D
     proper-kpc aperture (from GALFIND.DATA) when the entry is >0, else the
     catalogue's total bound M*. Subhalos with fewer than `min_npstar` bound
-    star particles are dropped before the central is chosen."""
+    star particles are dropped before the central is chosen. `center` picks
+    the aperture centre ('com' or 'galcenter', see plot_gsmf)."""
     step = f"{snapshot:05d}"
     galaxy_file = Path(root) / "FoF_Data" / f"FoF.{step}" / f"GALCATALOG.LIST.{step}"
     hosts, _, host_ids = read_galaxy_catalog(galaxy_file)
     masses, header = load_stellar_masses(root, snapshot, apertures_kpc,
-                                         min_npstar=min_npstar)
+                                         min_npstar=min_npstar, center=center)
     return header, [_select(hosts, host_ids, m, population) for m in masses]
 
 
-def load_relation(root, snapshot, population, aperture_kpc=None, min_npstar=0):
+def load_relation(root, snapshot, population, aperture_kpc=None, min_npstar=0,
+                  center="com"):
     """Single-aperture load_relations: (header, halo_mass, stellar_mass)."""
     header, [(halo_mass, stellar_mass)] = load_relations(
-        root, snapshot, population, [aperture_kpc], min_npstar=min_npstar)
+        root, snapshot, population, [aperture_kpc], min_npstar=min_npstar,
+        center=center)
     return header, halo_mass, stellar_mass
 
 
@@ -194,11 +198,15 @@ def main():
                         help="only keep galaxies with at least this many bound star "
                              "particles (GALCATALOG npstar); applied to every "
                              "aperture, before the central is chosen")
+    parser.add_argument("--center", choices=("com", "galcenter"), default="com",
+                        help="aperture centre: 'com' = subhalo centre of mass of all "
+                             "particle types; 'galcenter' = GalCenter stellar centre "
+                             "(GALFIND.CENTER), falling back to the COM where missing")
     args = parser.parse_args()
 
     header, relations = load_relations(
         args.root, args.snapshot, args.population, args.aperture_kpc,
-        min_npstar=args.min_npstar,
+        min_npstar=args.min_npstar, center=args.center,
     )
     if args.min_npstar > 0:
         m_sp = star_particle_mass(args.root, args.snapshot)
@@ -274,6 +282,8 @@ def main():
         ap = f"{a:g} pkpc aperture" if a and a > 0 else "total $M_\\star$"
     if args.min_npstar > 0:
         ap += f", $N_\\star\\geq{args.min_npstar}$"
+    if args.center != "com" and any(a and a > 0 for a in args.aperture_kpc):
+        ap += f", centre={args.center}"
     ax.set_title(
         f"PGALF stellar-to-halo mass relation "
         f"snapshot {args.snapshot:04d}, z={redshift:.3g}\n({args.population}, {ap})"

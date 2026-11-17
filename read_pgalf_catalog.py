@@ -227,6 +227,8 @@ def aperture_stellar_mass(filename, radius, box_size, centers=None, sizes=None):
                        `radius` may be a sequence: the file is read once and an
                        (N, len(radius)) array is returned instead of (N,).
     centers          : optional (N, 3) centres; default = each subhalo's COM.
+                       Rows that are not finite (e.g. NaN from
+                       galcenter_positions) fall back to that subhalo's COM.
     sizes            : optional (s_pm, s_gas) record strides; auto-detected if None.
     """
     if sizes is None:
@@ -238,7 +240,9 @@ def aperture_stellar_mass(filename, radius, box_size, centers=None, sizes=None):
         if len(mass) == 0:
             out.append(np.zeros(len(r2)))
             continue
-        c = com if centers is None else centers[i]
+        c = com
+        if centers is not None and np.all(np.isfinite(centers[i])):
+            c = centers[i]
         dx = pos - c
         dx -= box_size * np.round(dx / box_size)        # periodic minimum image
         d2 = (dx * dx).sum(axis=1)
@@ -311,6 +315,39 @@ def read_galaxy_centers(filename):
     if expected_bytes != actual_bytes:
         raise ValueError(f"Truncated or incompatible center file: {filename}")
     return centers
+
+
+# GalCenter writes this for subhalos without star particles.
+_NO_CENTER_POS = -999999.0
+
+
+def galcenter_positions(center_file, galaxy_file=None):
+    """GalCenter stellar centres as an (N, 3) array aligned with GALCATALOG.LIST
+    order (NaN where a subhalo has no entry or no star particles).
+
+    GALFIND.CENTER rows are matched by (halo_id, subhalo_id) = (host record
+    number, subhalo number within that host), not by row order. The `gal`
+    centre is a shrinking-sphere centre of the star particles (>30 stars;
+    star centre of mass for 1-30), in the same cMpc/h units as GALFIND.DATA.
+    """
+    if galaxy_file is None:
+        p = Path(center_file)
+        galaxy_file = p.with_name(p.name.replace("GALFIND.CENTER", "GALCATALOG.LIST"))
+    hosts, galaxies, _ = read_galaxy_catalog(galaxy_file)
+    cen = read_galaxy_centers(center_file)
+
+    nsub = hosts["nsub"].astype(np.int64)
+    start = np.concatenate(([0], np.cumsum(nsub)))
+    hid = cen["halo_id"].astype(np.int64)
+    sid = cen["subhalo_id"].astype(np.int64)
+    ok = (hid >= 0) & (hid < len(hosts)) & (sid >= 0)
+    ok[ok] &= sid[ok] < nsub[hid[ok]]
+    xyz = cen["gal"][:, :3]
+    ok &= np.all(xyz > 0.5 * _NO_CENTER_POS, axis=1)
+
+    out = np.full((len(galaxies), 3), np.nan)
+    out[start[hid[ok]] + sid[ok]] = xyz[ok]
+    return out
 
 
 def main():
