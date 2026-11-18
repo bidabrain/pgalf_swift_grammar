@@ -177,6 +177,17 @@ python plot_stellar_halo_relation.py --root <out_dir> --snapshot 274 \
   centres see contiguous positions (possibly <0). GalCenter's own x-wrap in
   `find_centers.c` (which has a `MAX(xmin, …)` typo and assumes boxes >700
   cMpc/h) only matters for non-periodic opFoF runs.
+- **Zoom-in runs** (cubic periodic box, galaxies only in the high-res region):
+  `--volume-frac F` (GSMF, default 1) normalises φ by `F × box_size³`, the
+  volume actually sampled, e.g. 1/16 for a 1/4 × 1/4 × 1 high-res column (less
+  if you discard a contaminated edge); without it φ is too low by 1/F.
+  `--max-lowres-frac F` (both scripts, default off) drops subhalos whose
+  low-resolution DM mass fraction exceeds F (`0` = only uncontaminated).
+  NewDD reads SWIFT PartType1/2/3 all as DM, so low-res particles are
+  identified by mass: heavier than the smallest `mdm/npdm` in the catalogue
+  (`read_pgalf_catalog.lowres_mass_fraction`, reads the DM blocks of
+  `GALFIND.DATA`). Periodic boundaries are handled with the full cubic box,
+  which is correct for SWIFT zooms (the box stays periodic in x, y, z).
 - `--min-npstar N` (both scripts, default 0 = off): keep only galaxies with
   at least N bound star particles (`npstar` in `GALCATALOG.LIST`), for every
   aperture; in the SHMR the cut is applied before the central is chosen. The

@@ -40,7 +40,7 @@ def _select(hosts, host_ids, mstar_all, population):
 
 
 def load_relations(root, snapshot, population, apertures_kpc, min_npstar=0,
-                   center="com"):
+                   center="com", max_lowres_frac=None):
     """Return (header, [(halo_mass, stellar_mass), ...]) in Msun/h, one pair
     per entry of apertures_kpc.
 
@@ -53,7 +53,8 @@ def load_relations(root, snapshot, population, apertures_kpc, min_npstar=0,
     galaxy_file = Path(root) / "FoF_Data" / f"FoF.{step}" / f"GALCATALOG.LIST.{step}"
     hosts, _, host_ids = read_galaxy_catalog(galaxy_file)
     masses, header = load_stellar_masses(root, snapshot, apertures_kpc,
-                                         min_npstar=min_npstar, center=center)
+                                         min_npstar=min_npstar, center=center,
+                                         max_lowres_frac=max_lowres_frac)
     return header, [_select(hosts, host_ids, m, population) for m in masses]
 
 
@@ -202,11 +203,15 @@ def main():
                         help="aperture centre: 'com' = subhalo centre of mass of all "
                              "particle types; 'galcenter' = GalCenter stellar centre "
                              "(GALFIND.CENTER), falling back to the COM where missing")
+    parser.add_argument("--max-lowres-frac", type=float, default=None,
+                        help="zoom runs: drop subhalos whose low-res DM mass fraction "
+                             "exceeds this (before choosing centrals); off by default")
     args = parser.parse_args()
 
     header, relations = load_relations(
         args.root, args.snapshot, args.population, args.aperture_kpc,
         min_npstar=args.min_npstar, center=args.center,
+        max_lowres_frac=args.max_lowres_frac,
     )
     if args.min_npstar > 0:
         m_sp = star_particle_mass(args.root, args.snapshot)

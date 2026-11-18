@@ -34,7 +34,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from read_pgalf_catalog import (read_fof_catalog, read_galaxy_catalog,
-                                 aperture_stellar_mass, galcenter_positions)
+                                 aperture_stellar_mass, galcenter_positions,
+                                 lowres_mass_fraction)
 
 
 # Davidzon+2017 COSMOS2015, TOTAL sample (Table 1, h=0.7).
@@ -111,7 +112,8 @@ def aperture_centers(fof_dir, step, center, n_subs):
     return cen
 
 
-def load_stellar_masses(root, snapshot, apertures_kpc, min_npstar=0, center="com"):
+def load_stellar_masses(root, snapshot, apertures_kpc, min_npstar=0, center="com",
+                        max_lowres_frac=None):
     """Per-subhalo M* [Msun/h] for each entry of `apertures_kpc`. An entry >0
     is a 3D proper-kpc aperture (from GALFIND.DATA, COLIBRE/obs convention);
     <=0 or None means the catalogue's total bound M*. GALFIND.DATA is read
@@ -119,6 +121,8 @@ def load_stellar_masses(root, snapshot, apertures_kpc, min_npstar=0, center="com
     particles get M*=0 (i.e. are dropped from the GSMF) in every array.
     center='com' centres apertures on the subhalo centre of mass (all particle
     types); 'galcenter' uses the GalCenter stellar centre (GALFIND.CENTER).
+    For zoom runs, max_lowres_frac drops subhalos whose low-resolution DM mass
+    fraction exceeds it (see read_pgalf_catalog.lowres_mass_fraction).
     Returns (list of arrays, header)."""
     step = f"{snapshot:05d}"
     fof_dir = Path(root) / "FoF_Data" / f"FoF.{step}"
@@ -144,6 +148,14 @@ def load_stellar_masses(root, snapshot, apertures_kpc, min_npstar=0, center="com
     if min_npstar > 0:
         keep = subs["npstar"] >= min_npstar
         masses = [np.where(keep, m, 0.0) for m in masses]
+    if max_lowres_frac is not None:
+        data_file = fof_dir / f"GALFIND.DATA.{step}"
+        if not data_file.exists():
+            raise SystemExit(f"--max-lowres-frac set but {data_file} is missing")
+        keep = lowres_mass_fraction(data_file) <= max_lowres_frac
+        print(f"--max-lowres-frac {max_lowres_frac:g}: dropping {int((~keep).sum())} of "
+              f"{len(keep)} subhalos with more low-res DM mass")
+        masses = [np.where(keep, m, 0.0) for m in masses]
     return masses, header
 
 
@@ -158,11 +170,13 @@ def star_particle_mass(root, snapshot):
 
 
 def gsmf_from_masses(mstar, box_size, mass_lo=7.0, mass_hi=12.0, dlog=0.25,
-                     min_count=1):
+                     min_count=1, volume_frac=1.0):
     """GSMF of galaxies with mstar>0. Returns
-    (logM_centers[Msun/h], logPhi[(Mpc/h)^-3 dex^-1], err_dex)."""
+    (logM_centers[Msun/h], logPhi[(Mpc/h)^-3 dex^-1], err_dex).
+    volume_frac: fraction of the box volume the galaxies sample (zoom runs:
+    the high-resolution region; 1 for a uniform box)."""
     mstar = mstar[mstar > 0]                          # Msun/h
-    volume = box_size ** 3                            # (Mpc/h)^3
+    volume = box_size ** 3 * volume_frac              # (Mpc/h)^3
     edges = np.arange(mass_lo, mass_hi + 1e-9, dlog)
     counts, _ = np.histogram(np.log10(mstar), bins=edges)
     centers = 0.5 * (edges[:-1] + edges[1:])
@@ -242,12 +256,22 @@ def main():
                    help="aperture centre: 'com' = subhalo centre of mass of all "
                         "particle types; 'galcenter' = GalCenter stellar centre "
                         "(GALFIND.CENTER), falling back to the COM where missing")
+    p.add_argument("--volume-frac", type=float, default=1.0,
+                   help="fraction of the box volume used to normalise phi; for a "
+                        "zoom run the high-res region (e.g. 1/16 for a 1/4 x 1/4 x 1 "
+                        "column, minus the contaminated edge)")
+    p.add_argument("--max-lowres-frac", type=float, default=None,
+                   help="zoom runs: drop subhalos whose low-res DM mass fraction "
+                        "exceeds this (e.g. 0 or 0.01); off by default")
     p.add_argument("--output", type=Path, default=None)
     args = p.parse_args()
+    if not 0 < args.volume_frac <= 1:
+        p.error("--volume-frac must be in (0, 1]")
 
     masses, header = load_stellar_masses(args.root, args.snapshot, args.aperture_kpc,
                                          min_npstar=args.min_npstar,
-                                         center=args.center)
+                                         center=args.center,
+                                         max_lowres_frac=args.max_lowres_frac)
     if args.min_npstar > 0:
         m_sp = star_particle_mass(args.root, args.snapshot)
         print(f"--min-npstar {args.min_npstar}: star particle mass ~{m_sp:.3g} Msun/h, "
@@ -260,7 +284,8 @@ def main():
     xmin, xmax = np.inf, -np.inf
     for k, (a, mstar) in enumerate(zip(args.aperture_kpc, masses)):
         centers, logphi, err = gsmf_from_masses(mstar, header["box_size"],
-                                                dlog=args.dlog)
+                                                dlog=args.dlog,
+                                                volume_frac=args.volume_frac)
         if len(centers) == 0:
             print(f"aperture {_aperture_label(a)}: no galaxies with mstar>0")
             continue
@@ -288,6 +313,10 @@ def main():
         ap += f", $N_\\star\\geq{args.min_npstar}$"
     if args.center != "com" and any(a and a > 0 for a in args.aperture_kpc):
         ap += f", centre={args.center}"
+    if args.volume_frac != 1:
+        ap += f", $V={args.volume_frac:.3g}\\,V_{{\\rm box}}$"
+    if args.max_lowres_frac is not None:
+        ap += f", $f_{{\\rm lowres}}\\leq{args.max_lowres_frac:g}$"
     ax.set_title(f"GSMF  snapshot {args.snapshot:04d}, z={z:.3g}  ({ap})")
     ax.grid(True, alpha=0.25)
     ax.legend(frameon=False, fontsize=9, loc="lower left")

@@ -211,6 +211,56 @@ def _validate_sizes(filename, s_pm, s_gas, target, n_val, rtol=1e-3):
     return True
 
 
+def _iter_galfind_dm_mass(filename, s_pm, s_gas):
+    """Yield the DM particle masses of each subhalo (GALCATALOG order)."""
+    size = Path(filename).stat().st_size
+    with open(filename, "rb") as f:
+        while f.tell() < size:
+            halo_hdr = f.read(_GALFIND_HDR_BYTES)
+            if len(halo_hdr) < _GALFIND_HDR_BYTES:
+                break
+            nsub = int(np.frombuffer(halo_hdr, dtype="<i4", count=1)[0])
+            for _ in range(nsub):
+                hdr = f.read(_GALFIND_HDR_BYTES)
+                if len(hdr) < _GALFIND_HDR_BYTES:
+                    raise ValueError(f"Truncated subhalo header: {filename}")
+                c = np.frombuffer(hdr, dtype="<i4", count=6)
+                ndm, ngas, nsink, nst = int(c[0]), int(c[1]), int(c[2]), int(c[3])
+                block = f.read(ndm * s_pm)
+                if len(block) < ndm * s_pm:
+                    raise ValueError(f"Truncated DM block: {filename}")
+                rec = np.frombuffer(block, dtype=np.uint8).reshape(ndm, s_pm)
+                yield rec[:, _PM_MASS_OFFSET:_PM_MASS_OFFSET + 8].copy().view("<f8").reshape(ndm)
+                f.seek(ngas * s_gas + nsink * _SINK_BYTES + nst * s_pm, 1)
+
+
+def lowres_mass_fraction(filename, sizes=None):
+    """Fraction of each subhalo's mass in low-resolution (zoom background) DM,
+    aligned with GALCATALOG order.
+
+    NewDD reads SWIFT PartType1/2/3 all as DM, so high- and low-res particles
+    are told apart by mass: the high-res DM mass is the smallest mdm/npdm in
+    the catalogue (any uncontaminated subhalo), and DM particles heavier than
+    that (by >0.1%) count as low-res. For a non-zoom run this is ~0 everywhere.
+    """
+    if sizes is None:
+        sizes = _detect_galfind_sizes(filename)
+    _, galaxies, _ = read_galaxy_catalog(_galcatalog_for(filename))
+    has_dm = galaxies["npdm"] > 0
+    if not has_dm.any():
+        return np.zeros(len(galaxies))
+    m_hr = float(np.min(galaxies["mdm"][has_dm] / galaxies["npdm"][has_dm]))
+    low = np.zeros(len(galaxies))
+    n = 0
+    for m in _iter_galfind_dm_mass(filename, *sizes):
+        low[n] = m[m > m_hr * (1 + 1e-3)].sum()
+        n += 1
+    if n != len(galaxies):
+        raise ValueError(f"GALFIND.DATA subhalos ({n}) != GALCATALOG ({len(galaxies)})")
+    totm = galaxies["totm"].astype(np.float64)
+    return np.divide(low, totm, out=np.zeros_like(low), where=totm > 0)
+
+
 def read_galfind_star_particles(filename, sizes=None):
     """Iterate (com_xyz, star_pos, star_mass) per subhalo, in GALCATALOG.LIST
     order. Record strides are auto-detected (sizes=(s_pm, s_gas) overrides).
