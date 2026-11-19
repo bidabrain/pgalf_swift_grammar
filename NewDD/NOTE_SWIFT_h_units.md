@@ -51,10 +51,36 @@ Actual units were cMpc and Msun (h = 0.6933 in the example run):
 | M* read as Msun/h | too high by 1/h → GSMF shifted **+0.16 dex in M*** |
 | Aperture radius (pkpc → cMpc/h uses ×h, coords in cMpc) | "50 pkpc" was really **≈35 pkpc** (30 → 21, 100 → 69) |
 | opFoF linking length `0.2·(m/ρ̄)^{1/3}` | effective **b ≈ 0.2·h^{2/3} ≈ 0.157** instead of 0.2 |
-| gfind stellar density vs `PEAKTHRESHOLD` (h² Msun/ckpc³) | density lower by h² → threshold effectively **≈2.1× higher**; TSC cell / smoothing physically 1/h larger |
+| gfind stellar density vs `PEAKTHRESHOLD` (h² Msun/ckpc³) | density lower by h² → threshold effectively **≈2.1× higher** |
+| TSC cell / Gaussian smoothing (`TSC_CELL_SIZE` 0.004, `Gaussian_Smoothing_Length` 0.008, code length) | 4 / 8 ckpc instead of 4 / 8 ckpc/h → physically **smaller by h** (finer grid, less smoothing) |
+| `MINSTELLARMASS` 2e6 (TYPE_ALL/TYPE_STAR switch) | applied to Msun instead of Msun/h → switch at ≈1.4e6 Msun/h (**lower by h**); the 32-star-particle criterion is unaffected |
 | Unbinding (G m / r) | m and r off by the same h → roughly unaffected |
 
-**Re-run from NewDD** (all four stages) after rebuilding NewDD. Write to a new
+### What can and cannot be corrected afterwards
+
+- **Unit mislabelling (first three rows)** is a fixed power of h for every
+  object: box/positions ×h, masses ×h, φ ×h⁻³ with the corrected volume, and
+  apertures can be recomputed from the particles in `GALFIND.DATA` with the
+  right radius. These could in principle be fixed in post-processing.
+- **The finder parameters (FoF linking length, `PEAKTHRESHOLD`, TSC grid and
+  smoothing, `MINSTELLARMASS`)** changed *which particles form a galaxy*. FoF
+  groups are smaller and more fragmented (host masses and total M* biased
+  low), and fewer density peaks pass the threshold (satellites missed or
+  merged into centrals, biasing the low-mass end). **This cannot be undone by
+  rescaling**; only a re-run fixes it.
+- Unit-corrected pre-fix catalogues are roughly usable for qualitative looks
+  at the high-mass end (M* ≳ 10^10 Msun/h), where stellar peaks are strong. The
+  low-mass end and satellite counts carry a systematic bias of unknown size
+  (part of the low-mass GSMF shape, e.g. the step near 10^8, may come from
+  it). **Never use them for emulator calibration**;
+  `emulator_grammar/measure_gsmf.py` refuses them (`check_little_h`).
+
+### Recommendation
+
+**Re-run from NewDD** (all four stages) after rebuilding NewDD
+(`cd NewDD && make clean && make all`). Check that the NewDD log prints
+`h=0.6933 ... -> boxlen=17.33 cMpc/h` and that the FoF header `box_size` is
+17.33, not 25. Write to a new
 output directory (or remove the old one): `run_pgalf.sh -r` would treat the old
 outputs as finished and skip them. Calibration runs processed with the old
 NewDD must be re-run too.
